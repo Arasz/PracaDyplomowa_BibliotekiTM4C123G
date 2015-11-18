@@ -9,7 +9,9 @@
 
 #define DUTY_CYCLE_DIVIDER 100
 
-uint32_t LoadValue;
+uint32_t LoadValue; //< PWM counter load value
+
+PIDControler LeftMotorControler, RigthMotorControler;
 
 void MCInitPwm(uint32_t DutyCycle)
 {
@@ -51,8 +53,18 @@ void MCInitGpio()
 
 void MCInitControlHardware(uint32_t DutyCycle)
 {
+	// Enable FPU for fast calculations
+	ROM_FPULazyStackingEnable();
+	ROM_FPUEnable();
+
 	MCInitGpio();
 	MCInitPwm(DutyCycle);
+}
+
+void MCInitControlSoftware(float samplingPeriod)
+{
+	InitControler(&LeftMotorControler, 1, 1, 1, 1, samplingPeriod, 1000, 1000);
+	InitControler(&RigthMotorControler, 1, 1, 1, 1,samplingPeriod, 1000, 1000);
 }
 
 void MCPwmDutyCycleSet(Motor selectedMotor, uint32_t DutyCycle)
@@ -76,5 +88,47 @@ void MCChangeMotorState(Motor selectedMotor, MotorState newMotorState)
 					newMotorState<<4|newMotorState<<1);
 			break;
 	}
+}
+
+void InitControler(PIDControler* controler, float Kp, float Ki, float Kd, float b, float dt, float posOutputLimit, float negOutputLimit)
+{
+	controler->Kp = Kp;
+	controler->Ki = Ki;
+	controler->Kd = Kd;
+	controler->b = b;
+	controler->dt = dt;
+	controler->posOutputLimit = posOutputLimit;
+	controler->negOutputLimit = negOutputLimit;
+	controler->lastError = 0;
+	controler->sum = 0;
+}
+
+float CalculateMotorControl(PIDControler controler, float setpoint, float measurement)
+{
+	float error = setpoint - measurement; // Control error
+
+	controler.sum += error; // Update errors sum for future integral calculations
+
+	float proportional = (controler.b*setpoint - measurement)*controler.Kp;
+	float integral = (controler.sum*controler.dt)*controler.Ki;
+	float controlSignal = 0;
+
+	if(controler.Kd != 0) // Derivative term is less frequently calculated.
+	{
+		float deltaError = error - controler.lastError;
+		float derivative = (deltaError/controler.dt)*controler.Kd;
+		controler.lastError = error;
+		controlSignal = derivative;
+	}
+
+	controlSignal += proportional + integral;
+
+	// Anti wind-up
+	if(controlSignal > controler.posOutputLimit)
+		controlSignal = controler.posOutputLimit;
+	else if(controlSignal < controler.negOutputLimit)
+		controlSignal = controler.negOutputLimit;
+
+	return controlSignal;
 }
 
