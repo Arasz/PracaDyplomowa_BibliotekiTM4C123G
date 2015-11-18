@@ -5,9 +5,9 @@
  *      Author: palka
  */
 
-#include "UART3_conf.h"
+#include "UART3Config.h"
 
-void UART3_Init()
+void UCInitUART3()
 {
 	//Enable the UART0 and GPIOC peripherals (the UART2 pins are on GPIO Port C)
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_UART3);

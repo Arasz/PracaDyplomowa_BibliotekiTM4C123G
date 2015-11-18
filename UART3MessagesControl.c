@@ -5,13 +5,13 @@
  *      Author: palka
  */
 
-#include "UART3_messages_control.h"
+#include "UART3MessagesControl.h"
 
 //helper variables used to write and decode message
 unsigned char inBuffer[MESSAGE_LENGTH_IN]; //buffor to store readed message
 unsigned char outBuffer[MESSAGE_LENGTH_OUT]; //buffor to store message to send
 unsigned int i = 0; //variable to manage char position in inBuffer array
-bool messageInProgress = false;
+bool MessageInProgress = false;
 
 //data used on the outside
 Direction direction = Stop;
@@ -32,7 +32,6 @@ void UARTIntHandler(void)
         WriteCharToBuffer(temp);  //check if character is part of frame and write it to buffer
 
     }
-	//UARTCharPutNonBlocking(UART3_BASE,'G');
 }
 
 void SendMessage()
@@ -105,17 +104,17 @@ void WriteCharToBuffer(unsigned char character)
     if(character == START_BYTE)
     {
     	i=0;
-    	messageInProgress = true;
+    	MessageInProgress = true;
     	inBuffer[i] = character;
     }
-    else if(messageInProgress && character == STOP_BYTE)
+    else if(MessageInProgress && character == STOP_BYTE)
     {
     	i++;
-    	messageInProgress = false;
+    	MessageInProgress = false;
     	DecodeMessage();
     	inBuffer[i] = character;
     }
-    else if(messageInProgress)
+    else if(MessageInProgress)
     {
     	i++;
     	inBuffer[i] = character;

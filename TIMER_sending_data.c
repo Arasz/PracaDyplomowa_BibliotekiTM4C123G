@@ -15,7 +15,7 @@ void Timer1IntHandler(void)
 }
 
 
-void Timer1_Init(unsigned int frequency)
+void TSDInitTimer1(unsigned int frequency)
 {
 	uint32_t ui32Period; //desired clock period
 

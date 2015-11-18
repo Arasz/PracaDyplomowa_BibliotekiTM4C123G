@@ -47,7 +47,7 @@
 extern unsigned char inBuffer[MESSAGE_LENGTH_IN]; //buffor to store readed message
 extern unsigned char outBuffer[MESSAGE_LENGTH_OUT]; //buffor to store readed message
 extern unsigned int i; //variable to manage char position in inBuffer array
-extern bool messageInProgress;
+extern bool MessageInProgress;
 
 /* New data types */
 typedef enum DirectionType
@@ -60,7 +60,6 @@ typedef enum DirectionType
 } Direction;
 
 //data used on the outside
-// TODO: Change direction for enum typedef DIR{} Direction;
 extern Direction direction;
 
 extern uint32_t velocity;

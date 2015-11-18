@@ -19,9 +19,14 @@
 #include "inc/hw_ints.h"
 #include "driverlib/interrupt.h"
 
+//predefined baud rate
 #define BAUD_RATE 9600
 
-void UART3_Init(void);
+/* Configure UART3 connection
+ * used to communicate with Android via Bluetooth
+ * used pins: PC6 (RX) and PC7 (TX)
+ */
+void UCInitUART3(void);
 
 
 #endif /* UART3_CONF_H_ */

@@ -18,9 +18,14 @@
 #include "inc/hw_ints.h" //includes valid INT_ values for IntEnable function parameter
 #include "driverlib/timer.h" //macros for Timer API
 
-#include "UART3_messages_control.h"
-#include "current_sensing.h"
+#include "UART3MessagesControl.h"
+#include "CurrentSensing.h"
 
-void Timer1_Init(unsigned int frequency);
+/* Initialize Timer 1 used to
+ * periodically send data via UART
+ * with given frequency
+ * param frequency - frequency of sending data to device
+ */
+void TSDInitTimer1(unsigned int frequency);
 
 #endif /* TIMER_SENDING_DATA_H_ */

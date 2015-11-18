@@ -20,33 +20,34 @@
 #include "driverlib/timer.h" //macros for Timer API
 
 
-	//Sequencer 1 generates 4 samples	/* array that will be used for storing the data read from the ADC FIFO.
-	/* Array must be as large as the FIFO for the sequencer in use.
+	//Sequencer 1 generates 4 samples
+	/* array that will be used for storing the data read from the ADC FIFO.
+	 * Array must be as large as the FIFO for the sequencer in use.
 	 *
 	 * Sequencer 0 : 8 samples
 	 * Sequencer 1 : 4 samples
 	 * Sequencer 2 : 4 samples
 	 * Sequencer 3 : 1 samples
 	 *
-	 * We will be using sequencer 1
+	 * This library uses sequencer 1
 	 */
 	uint32_t ui32ADC0Value[4]; //data buffer
 
-	volatile uint32_t ui32ADC0ValueAvg_CH0; //average value readed from PE3
-	volatile uint32_t ui32ADC0ValueAvg_CH1;	//average value readed from PE2
+	volatile uint32_t ui32ADC0ValueAvg_CH4; //average value readed from PD3
+	volatile uint32_t ui32ADC0ValueAvg_CH5;	//average value readed from PD2
 
-	volatile uint32_t ui32VoltageMotorLeft; //voltage on channel 0 (PE3)
-	volatile uint32_t ui32VoltageMotorRight; //voltage on channel 1 (PE2)
+	volatile uint32_t ui32VoltageMotorLeft; //voltage on channel 4 (PD3)
+	volatile uint32_t ui32VoltageMotorRight; //voltage on channel 5 (PD2)
 
-	volatile uint32_t ui32CurrentMotorLeft; //current on channel 0 (PE3)
-	volatile uint32_t ui32CurrentMotorRight; //current on channel 1 (PE2)
+	volatile uint32_t ui32CurrentMotorLeft; //current on channel 4 (PD3)
+	volatile uint32_t ui32CurrentMotorRight; //current on channel 5 (PD2)
 
 
     /*
 	* Calls ADC0_Init, Timer0_Init and Interrupts_Enable function
 	* most general function to be called from the outside
     */
-	void CurrentSensing_Init(void);
+	void CSInit(void);
 
     /*
 	* Initialize ADC0 sequencer 1
@@ -56,14 +57,14 @@
 	* it also calculate it to get ui32CurrentMotorRight/Left
 	* (results are stored in this variables)
     */
-	void ADC0_Init(void);
+	void CSInitADC0(void);
 
     /*
 	* Initialize TIMER0 as ADC trigger
 	* 32 bit periodic timer
 	* frequency = 10Hz
     */
-	void Timer0_Init(void);
+	void CSInitTimer0(void);
 
     /*
 	* Initialize processor, TIM0 and ADC0 interrupts
@@ -71,6 +72,6 @@
 	* to get ADC0 interrupt to work ADC0IntHandler MUST be placed in interrupt vector
 	* (tm4c123gh6pm_startup_ccs.c file) and declared in this file under "extern void _c_int00(void);"
     */
-	void Interrupts_Enable(void);
+	void CSEnableInterrupts(void);
 
 #endif /* ADC_ADC_TIMER_INTERRUPT_DEMO_ADC_CONFIG_H_ */

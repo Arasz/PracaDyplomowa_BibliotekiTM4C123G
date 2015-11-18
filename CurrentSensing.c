@@ -6,25 +6,24 @@
  */
 
 
-#include "current_sensing.h"
+#include "CurrentSensing.h"
 
-void CurrentSensing_Init(void)
+void CSInit(void)
 {
-	ADC0_Init();
-	Timer0_Init();
-	Interrupts_Enable();
+	CSInitADC0();
+	CSInitTimer0();
+	CSEnableInterrupts();
 }
 
-void Interrupts_Enable(void)
+void CSEnableInterrupts(void)
 {
 
 	IntMasterEnable();				// Enable processor interrupts.
 	ADCIntEnable(ADC0_BASE, 1);		//enable ADC0 interrupts
 	IntEnable(INT_ADC0SS1);			//enable interrupt when ADC0 conversion is done
-	TimerEnable(TIMER0_BASE, TIMER_A); //enable timerA interrupts
 }
 
-void ADC0_Init(void)
+void CSInitADC0(void)
 {
 	//enable ADC0 peripheral
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
@@ -39,15 +38,15 @@ void ADC0_Init(void)
 		 	 	 	 	 1, 					// sequencer 1
 					     ADC_TRIGGER_TIMER, 	//timer trigger sequence
 					     0); 					//highest priority
-	 //configure all four steps in the ADC sequencer. CH0 (PE3)
-	ADCSequenceStepConfigure(ADC0_BASE, 1, 0, ADC_CTL_CH0);
-	ADCSequenceStepConfigure(ADC0_BASE, 1, 1, ADC_CTL_CH0);
-	 //configure all four steps in the ADC sequencer. CH1 (PE2)
-	ADCSequenceStepConfigure(ADC0_BASE, 1, 2, ADC_CTL_CH1);
+	 //configure all four steps in the ADC sequencer. CH4 (PD3)
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 0, ADC_CTL_CH4);
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 1, ADC_CTL_CH4);
+	 //configure all four steps in the ADC sequencer. CH5 (PD2)
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 2, ADC_CTL_CH5);
 	ADCSequenceStepConfigure(ADC0_BASE, //use ADC0
 							1,		 // sequencer 1
 							3,		//step nr
-							ADC_CTL_CH1 | 		//Chanel 1 : PE2
+							ADC_CTL_CH5 | 		//Chanel 1 : PE2
 							ADC_CTL_IE| 	//configure the interrupt flag (ADC_CTL_IE) to be set when the sample is done
 							ADC_CTL_END);	//last conversion on sequencer
 
@@ -61,7 +60,7 @@ void ADC0_Init(void)
 
 
 
-void Timer0_Init(void)
+void CSInitTimer0(void)
 {
 	uint32_t ui32Period; //desired clock period
 
@@ -89,6 +88,7 @@ void Timer0_Init(void)
 
 	// Enable triggering
 	TimerControlTrigger(TIMER0_BASE, TIMER_A, true);
+	TimerEnable(TIMER0_BASE, TIMER_A); //enable timerA
 }
 
 /*
@@ -107,13 +107,13 @@ void ADC0IntHandler(void) {
 	 //read the ADC value from the ADC Sample Sequencer 1 FIFO
 	 ADCSequenceDataGet(ADC0_BASE, 1, ui32ADC0Value);
 	 //calculate average voltage
-	 ui32ADC0ValueAvg_CH0 = (ui32ADC0Value[0] + ui32ADC0Value[1])/2;
+	 ui32ADC0ValueAvg_CH4 = (ui32ADC0Value[0] + ui32ADC0Value[1])/2;
 	 // mV per ADC code = (VREFP - VREFN) * value / 4096
-	 ui32VoltageMotorLeft = 3300 * ui32ADC0ValueAvg_CH0 / 4096; //[mV]*/
+	 ui32VoltageMotorLeft = 3300 * ui32ADC0ValueAvg_CH4 / 4096; //[mV]*/
 	 ui32CurrentMotorLeft = ui32VoltageMotorLeft * 10 / 22; //R = 2.2 Ohm
 
-	 ui32ADC0ValueAvg_CH1 = (ui32ADC0Value[2] + ui32ADC0Value[3])/2;
+	 ui32ADC0ValueAvg_CH5 = (ui32ADC0Value[2] + ui32ADC0Value[3])/2;
 	 // mV per ADC code = (VREFP - VREFN) * value / 4096
-	 ui32VoltageMotorRight = 3300 * ui32ADC0ValueAvg_CH1 / 4096; //[mV]*/
+	 ui32VoltageMotorRight = 3300 * ui32ADC0ValueAvg_CH5 / 4096; //[mV]*/
 	 ui32CurrentMotorRight = ui32VoltageMotorRight * 10 / 22; //R = 2.2 Ohm
 }
