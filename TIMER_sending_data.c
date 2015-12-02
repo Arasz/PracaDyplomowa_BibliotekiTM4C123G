@@ -32,7 +32,7 @@ void TSDInitTimer1(unsigned int frequency)
 	 * desired frequency = x Hz
 	 * duty cycle = 50% (interrupt at 1/2 of the desired period)
 	 */
-	ui32Period = (SysCtlClockGet() / frequency) / 2;
+	ui32Period = (SysCtlClockGet() / frequency) ;
 
 	/*
 	 * load calculated period into the Timer’s Interval Load register using the TimerLoadSet

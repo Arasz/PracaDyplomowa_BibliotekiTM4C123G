@@ -14,7 +14,8 @@ unsigned int i = 0; //variable to manage char position in inBuffer array
 bool MessageInProgress = false;
 
 //data used on the outside
-Direction direction = Stop;
+bool moveRobotFlag = false;
+uint16_t drivingAngle = 0; //0-360
 uint32_t velocity = 0;
 bool UARTDataChanged = false;
 
@@ -30,7 +31,6 @@ void UARTIntHandler(void)
     {
         temp = UARTCharGetNonBlocking(UART3_BASE); //gets character
         WriteCharToBuffer(temp);  //check if character is part of frame and write it to buffer
-
     }
 }
 
@@ -55,24 +55,12 @@ void OnUartDataChangedEvent()
 
 void DecodeMessage()
 {
-	switch(inBuffer[INDEX_DIRECTION])
-	{
-	case 'H':
-		direction = Stop;
-		break;
-	case 'F':
-		direction = Forward;
-		break;
-	case 'B':
-		direction = Backward;
-		break;
-	case 'L':
-		direction = Left;
-		break;
-	case 'R':
-		direction = Right;
-		break;
-	}
+	if(inBuffer[INDEX_ROBOT_STOP_SIGN]==ROBOT_MOVE_SIGN)
+		moveRobotFlag = true;
+	else
+		moveRobotFlag = false;
+
+	drivingAngle = (inBuffer[INDEX_ANGLE]-48)*100 + (inBuffer[INDEX_ANGLE+1]-48)*10 + (inBuffer[INDEX_ANGLE+2]-48);
 	velocity = (inBuffer[INDEX_VELOCITY]-48)*100 + (inBuffer[INDEX_VELOCITY+1]-48)*10 + (inBuffer[INDEX_VELOCITY+2]-48);
 	OnUartDataChangedEvent();
 }

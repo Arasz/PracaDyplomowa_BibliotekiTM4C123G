@@ -21,18 +21,14 @@
 //special characters
 #define START_BYTE '{'
 #define STOP_BYTE '}'
-
-//possible move directions
-#define MOVE_LEFT 'L'
-#define MOVE_RIGHT 'R'
-#define MOVE_FORWARD 'F'
-#define MOVE_BACK 'B'
-#define DONT_MOVE 'H'
+#define ROBOT_STOP_SIGN 'S'
+#define ROBOT_MOVE_SIGN 'M'
 
 //indexes on in message for informations
 //in message
-#define INDEX_DIRECTION 1
-#define INDEX_VELOCITY  2
+#define INDEX_ROBOT_STOP_SIGN 1
+#define INDEX_ANGLE 2
+#define INDEX_VELOCITY  5
 //out message
 #define INDEX_START_BYTE 0
 #define INDEX_CURRENT_1  1
@@ -41,7 +37,7 @@
 
 
  //length of the message
-#define MESSAGE_LENGTH_IN 6 //input message length
+#define MESSAGE_LENGTH_IN 9 //maximum input message length (contains velocity and angle)
 #define MESSAGE_LENGTH_OUT 10 //output message length
 
 extern unsigned char inBuffer[MESSAGE_LENGTH_IN]; //buffor to store readed message
@@ -49,19 +45,8 @@ extern unsigned char outBuffer[MESSAGE_LENGTH_OUT]; //buffor to store readed mes
 extern unsigned int i; //variable to manage char position in inBuffer array
 extern bool MessageInProgress;
 
-/* New data types */
-typedef enum DirectionType
-{
-	Forward,
-	Backward,
-	Left,
-	Right,
-	Stop,
-} Direction;
-
-//data used on the outside
-extern Direction direction;
-
+extern bool moveRobotFlag;
+extern uint16_t drivingAngle;
 extern uint32_t velocity;
 extern bool UARTDataChanged;
 
