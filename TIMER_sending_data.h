@@ -18,7 +18,7 @@
 #include "inc/hw_ints.h" //includes valid INT_ values for IntEnable function parameter
 #include "driverlib/timer.h" //macros for Timer API
 
-#include "UART3MessagesControl.h"
+#include "UARTMessagesControl.h"
 #include "CurrentSensing.h"
 
 /* Initialize Timer 1 used to

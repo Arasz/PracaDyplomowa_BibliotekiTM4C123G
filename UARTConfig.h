@@ -1,12 +1,12 @@
 /*
- * UART3_conf.h
+ * UART_conf.h
  *
  *  Created on: 9 lis 2015
- *      Author: palka
+ *      Author: Paulina Sadowska
  */
 
-#ifndef UART3_CONF_H_
-#define UART3_CONF_H_
+#ifndef UART_CONF_H_
+#define UART_CONF_H_
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -22,11 +22,25 @@
 //predefined baud rate
 #define BAUD_RATE 9600
 
+/* Calls functions which configure UART connections and interrupts
+ */
+void UCInitUART(void);
+
 /* Configure UART3 connection
  * used to communicate with Android via Bluetooth
  * used pins: PC6 (RX) and PC7 (TX)
  */
-void UCInitUART3(void);
+void InitUART3(void);
+
+/* Configure UART4 connection
+ * used to communicate with Raspberry via UART
+ * used pins: PC4 (RX) and PC5 (TX)
+ */
+void InitUART4(void);
+
+/* Configure UART3 and UART 4 interrupts
+ */
+void InitUARTInterrupts(void);
 
 
-#endif /* UART3_CONF_H_ */
+#endif /* UART_CONF_H_ */
