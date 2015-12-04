@@ -7,18 +7,20 @@
 
 #include "UARTMessagesControl.h"
 
-char connectionState = 0;
+uint16_t connectionState = 0;
+char timeToLive = TIME_TO_LIVE_MAX;
 
 //helper variables used to write and decode message
 //UART3
 unsigned char inBuffer3[MESSAGE_LENGTH_IN]; //buffor to store readed message
-unsigned char outBuffer3[MESSAGE_LENGTH_OUT]; //buffor to store message to send
+
 //UART4
 unsigned char inBuffer4[MESSAGE_LENGTH_IN]; //buffor to store readed message
-unsigned char outBuffer4[MESSAGE_LENGTH_OUT]; //buffor to store message to send
+
+unsigned char outBuffer[MESSAGE_LENGTH_OUT]; //buffor to store message to send
+unsigned char outBufferConnection[MESSAGE_CONNECTION_LENGTH_OUT]; //buffor to store message to send
 
 unsigned char* inBuffer; //temp buffer to store reference to the right inBuffer
-unsigned char* outBuffer; //temp buffer to store reference to the right inBuffer
 
 unsigned int i = 0; //variable to menage char position in inBuffer array
 bool MessageInProgress = false;
@@ -58,31 +60,51 @@ void UART4IntHandler(void)
     }
 }
 
-void SendMessage(unsigned char UARTNr, unsigned char length)
+void SendMessage(unsigned char UARTNr, bool connectionMessage)
 {
 	int j;
 	if(UARTNr == UART_BLUETOOTH_NR)
 	{
-		for(j=0; j<length; j++)
-			UARTCharPutNonBlocking(UART3_BASE,outBuffer3[j]);
+		if(connectionMessage)
+		{
+			for(j=0; j<MESSAGE_CONNECTION_LENGTH_OUT; j++)
+				UARTCharPutNonBlocking(UART3_BASE,outBufferConnection[j]);
+		}
+		else
+		{
+			for(j=0; j<MESSAGE_LENGTH_OUT; j++)
+				UARTCharPutNonBlocking(UART3_BASE,outBuffer[j]);
+		}
 	}
 	else if(UARTNr == UART_RASPBERRY_NR)
 	{
-		for(j=0; j<length; j++)
-			UARTCharPutNonBlocking(UART4_BASE,outBuffer4[j]);
+		if(connectionMessage)
+		{
+			for(j=0; j<MESSAGE_CONNECTION_LENGTH_OUT; j++)
+				UARTCharPutNonBlocking(UART4_BASE,outBufferConnection[j]);
+		}
+		else
+		{
+			for(j=0; j<MESSAGE_LENGTH_OUT; j++)
+				UARTCharPutNonBlocking(UART4_BASE,outBuffer[j]);
+		}
 	}
+
+	if(timeToLive == 0)
+		connectionState = NOT_CONNECTED;
+	else
+		timeToLive -= 1;
 }
 
-void CodeAcknowlegeMessage(bool error, unsigned char UARTNr)
+/*void CodeAcknowlegeMessage(bool error, unsigned char UARTNr)
 {
-	ChooseOutBuffer(UARTNr);
-	outBuffer[INDEX_START_BYTE]=START_BYTE;
-	outBuffer[MESSAGE_CONNECTION_LENGTH_OUT-1]=STOP_BYTE;
+	outBufferConnection[INDEX_START_BYTE]=START_BYTE;
+	outBufferConnection[MESSAGE_CONNECTION_LENGTH_OUT-1]=STOP_BYTE;
 	if(error)
-		outBuffer[INDEX_CONNECTION_INFO] = ERROR_SIGN;
+		outBufferConnection[INDEX_CONNECTION_INFO] = ERROR_SIGN;
 	else
-		outBuffer[INDEX_CONNECTION_INFO] = ACKNOWLEDGE_SIGN;
-}
+		outBufferConnection[INDEX_CONNECTION_INFO] = ACKNOWLEDGE_SIGN;
+}*/
 
 void UARTDataChangedSubscribe(void(*uartDataChangedEventHandler)(void))
 {
@@ -96,9 +118,7 @@ void OnUartDataChangedEvent()
 
 void DecodeMessage(unsigned char UARTNr)
 {
-
 	ChooseInBuffer(UARTNr);
-
 	//get connection information from message
 	if(inBuffer[MESSAGE_CONNECTION_LENGTH_IN-1]==STOP_BYTE)
 	{
@@ -106,21 +126,21 @@ void DecodeMessage(unsigned char UARTNr)
 		//update connectionInfo basing on recieved connection message
 		if(inBuffer[INDEX_CONNECTION_INFO]==CONNECT_SIGN )//connect via bluetooth
 		{
+			//CodeAcknowlegeMessage(false, UARTNr); //send that there is no error
+			//SendMessage(UARTNr, true);
+
 			if(UARTNr == UART_BLUETOOTH_NR && connectionState != CONNECTED_RASPBERRY)
 				connectionState = CONNECTED_BLUETOOTH;
 			else if(UARTNr == UART_RASPBERRY_NR && connectionState != CONNECTED_BLUETOOTH)
 				connectionState = CONNECTED_RASPBERRY;
-
-			CodeAcknowlegeMessage(false, UARTNr); //send that there is no error
-			SendMessage(UARTNr, MESSAGE_CONNECTION_LENGTH_OUT);
 		}
 		else if(inBuffer[INDEX_CONNECTION_INFO]==DISCONNECTED_SIGN)
-			connectionState = DISCONNECTED_SIGN;
-		else
+			connectionState = NOT_CONNECTED;
+		/*else
 		{ 		//ERROR
 			CodeAcknowlegeMessage(true, UARTNr); //send that there is an error
-			SendMessage(UARTNr, MESSAGE_CONNECTION_LENGTH_OUT);
-		}
+			SendMessage(UARTNr, true);
+		}*/
 	}
 	else
 	{
@@ -141,7 +161,6 @@ void DecodeMessage(unsigned char UARTNr)
 
 void CodeMessage(int current1, int current2, unsigned char UARTNr)
 {
-	ChooseInBuffer(UARTNr);
 
 	outBuffer[INDEX_START_BYTE] = START_BYTE;
 	outBuffer[INDEX_STOP_BYTE] = STOP_BYTE;
@@ -165,6 +184,7 @@ void CodeMessage(int current1, int current2, unsigned char UARTNr)
 
 void WriteCharToBuffer(unsigned char character, unsigned char UARTNr)
 {
+	timeToLive = TIME_TO_LIVE_MAX;
     if(character == START_BYTE)
     {
     	i=0;
@@ -175,8 +195,8 @@ void WriteCharToBuffer(unsigned char character, unsigned char UARTNr)
     {
     	i++;
     	MessageInProgress = false;
-    	DecodeMessage(UARTNr);
     	WriteChar(character, UARTNr);
+    	DecodeMessage(UARTNr);
     }
     else if(MessageInProgress)
     {
@@ -202,11 +222,3 @@ void ChooseInBuffer(unsigned char UARTNr)
 		inBuffer = inBuffer4;
 }
 
-void ChooseOutBuffer(unsigned char UARTNr)
-{
-	//choose right out buffer basing on uart nr
-	if(UARTNr == UART_BLUETOOTH_NR)
-		outBuffer = outBuffer3;
-	else if(UARTNr == UART_RASPBERRY_NR)
-		outBuffer = outBuffer4;
-}

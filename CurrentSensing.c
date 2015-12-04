@@ -46,7 +46,7 @@ void CSInitADC0(void)
 	ADCSequenceStepConfigure(ADC0_BASE, //use ADC0
 							1,		 // sequencer 1
 							3,		//step nr
-							ADC_CTL_CH5 | 		//Chanel 1 : PE2
+							ADC_CTL_CH5 | 		//Chanel 5 : PD2
 							ADC_CTL_IE| 	//configure the interrupt flag (ADC_CTL_IE) to be set when the sample is done
 							ADC_CTL_END);	//last conversion on sequencer
 

@@ -61,5 +61,7 @@ void InitUARTInterrupts()
     */
     UARTIntEnable(UART3_BASE, UART_INT_RX | UART_INT_RT);
     UARTIntEnable(UART4_BASE, UART_INT_RX | UART_INT_RT);
+    IntPrioritySet(INT_UART3,  0x00); //highest priority
+    IntPrioritySet(INT_UART4,  0x00); //highest priority
 
 }

@@ -31,7 +31,7 @@
 
 //indexes on in message for informations
 //connection in message
-#define INDEX_CONNECTION_INFO 2
+#define INDEX_CONNECTION_INFO 1
 //control in message
 #define INDEX_ROBOT_STOP_SIGN 1
 #define INDEX_ANGLE 2
@@ -51,23 +51,28 @@
 #define MESSAGE_LENGTH_OUT 10 //output message length
 #define MESSAGE_CONNECTION_LENGTH_OUT 3
 
+//MAX time to live. determines how quickly state turns to disconnected after when recieving messages
+#define TIME_TO_LIVE_MAX 5
+
 //possible connection states
 #define NOT_CONNECTED 0
-#define CONNECTED_BLUETOOTH 3
-#define CONNECTED_RASPBERRY 4
+#define CONNECTED_BLUETOOTH 30
+#define CONNECTED_RASPBERRY 40
 
-extern char connectionState; //determines state of connection
+extern uint16_t connectionState; //determines state of connection
+extern char timeToLive;
 
 //BLUETOOTH BUFFERS
 extern unsigned char inBuffer3[MESSAGE_LENGTH_IN]; //buffor to store readed message from bluetooth
-extern unsigned char outBuffer3[MESSAGE_LENGTH_OUT]; //buffor to store message to send to bluetooth
 
 //RASPBERRY BUFFERS
 extern unsigned char inBuffer4[MESSAGE_LENGTH_IN]; //buffor to store readed message from raspberry
-extern unsigned char outBuffer4[MESSAGE_LENGTH_OUT]; //buffor to store message to send to raspberry
+
+//SHARED BUFFERS
+extern unsigned char outBuffer[MESSAGE_LENGTH_OUT]; //buffor to store message to send
+extern unsigned char outBufferConnection[MESSAGE_CONNECTION_LENGTH_OUT]; //buffor to store message to send
 
 extern unsigned char* inBuffer; //handler to currently used inBuffor
-extern unsigned char* outBuffer; //handler to currently used outBuffor
 
 extern unsigned int i; //variable to manage char position in inBuffer array
 extern bool MessageInProgress;
@@ -86,8 +91,8 @@ void WriteCharToBuffer(unsigned char character, unsigned char UARTNr);
 void WriteChar(unsigned char character, unsigned char UARTNr);
 void DecodeMessage(unsigned char UARTNr);
 void CodeMessage(int current1, int current2, unsigned char UARTNr);
-void CodeAcknowlegeMessage(bool error, unsigned char UARTNr);
-void SendMessage(unsigned char UARTNr, unsigned char length);
+//void CodeAcknowlegeMessage(bool error, unsigned char UARTNr);
+void SendMessage(unsigned char UARTNr, bool connectionMessage);
 void OnUartDataChangedEvent();
 void UARTDataChangedSubscribe(void(*uartDataChangedEventHandler)(void));
 void ChooseInBuffer(unsigned char UARTNr);

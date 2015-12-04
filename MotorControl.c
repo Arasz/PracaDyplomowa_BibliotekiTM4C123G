@@ -39,6 +39,8 @@ void MCInitPwm(uint32_t DutyCycle)
 	ROM_PWMPulseWidthSet(PWM1_BASE, PWM_OUT_0, (DutyCycle*LoadValue)/DUTY_CYCLE_DIVIDER);
 	// Enable PWM output 0 and 1
 	ROM_PWMOutputState(PWM1_BASE, PWM_OUT_0_BIT|PWM_OUT_1_BIT, true);
+	// Invert output - if true output is active low
+	PWMOutputInvert(PWM1_BASE,PWM_OUT_0_BIT|PWM_OUT_1_BIT, false );
 	// Enable PWM generator
 	ROM_PWMGenEnable(PWM1_BASE, PWM_GEN_0);
 }
@@ -69,7 +71,10 @@ void MCInitControlSoftware(float samplingPeriod)
 
 void MCPwmDutyCycleSet(Motor selectedMotor, uint32_t DutyCycle)
 {
-	ROM_PWMPulseWidthSet(PWM1_BASE, selectedMotor, (DutyCycle*LoadValue)/100 );
+	if(DutyCycle>0)
+		ROM_PWMPulseWidthSet(PWM1_BASE, selectedMotor, (DutyCycle*LoadValue)/100 );
+	else
+		ROM_PWMPulseWidthSet(PWM1_BASE, selectedMotor, (LoadValue)/100 );
 }
 
 void MCChangeMotorState(Motor selectedMotor, MotorState newMotorState)
