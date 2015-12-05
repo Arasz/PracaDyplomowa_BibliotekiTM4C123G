@@ -20,29 +20,29 @@ void MCInitPwm(uint32_t DutyCycle)
 
 	// Enable peripherals
 	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM1);
-	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
+	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
 
 	// Configure pin PD0 as PWM output
-	ROM_GPIOPinTypePWM(GPIO_PORTD_BASE, GPIO_PIN_0|GPIO_PIN_1);
-	ROM_GPIOPinConfigure(GPIO_PD0_M1PWM0);
-	ROM_GPIOPinConfigure(GPIO_PD1_M1PWM1);
+	ROM_GPIOPinTypePWM(GPIO_PORTA_BASE, GPIO_PIN_6|GPIO_PIN_7);
+	ROM_GPIOPinConfigure(GPIO_PA6_M1PWM2);
+	ROM_GPIOPinConfigure(GPIO_PA7_M1PWM3);
 
 	// Calculate PWM clock
 	uint32_t PWMClock = SysCtlClockGet() / 64;
 	// Value from/to which PWM counter counts (subtract 1 becouse counter counts from 0). This is PWM period
 	LoadValue = (PWMClock/PWM_FREQUENCY) - 1;
 	// Configure PWM
-	ROM_PWMGenConfigure(PWM1_BASE, PWM_GEN_0, PWM_GEN_MODE_DOWN);
-	ROM_PWMGenPeriodSet(PWM1_BASE, PWM_GEN_0, LoadValue);
+	ROM_PWMGenConfigure(PWM1_BASE, PWM_GEN_1, PWM_GEN_MODE_DOWN);
+	ROM_PWMGenPeriodSet(PWM1_BASE, PWM_GEN_1, LoadValue);
 	// Set PWM signal width
-	ROM_PWMPulseWidthSet(PWM1_BASE, PWM_OUT_1, (DutyCycle*LoadValue)/DUTY_CYCLE_DIVIDER);
-	ROM_PWMPulseWidthSet(PWM1_BASE, PWM_OUT_0, (DutyCycle*LoadValue)/DUTY_CYCLE_DIVIDER);
+	ROM_PWMPulseWidthSet(PWM1_BASE, PWM_OUT_2, (DutyCycle*LoadValue)/DUTY_CYCLE_DIVIDER);
+	ROM_PWMPulseWidthSet(PWM1_BASE, PWM_OUT_3, (DutyCycle*LoadValue)/DUTY_CYCLE_DIVIDER);
 	// Enable PWM output 0 and 1
-	ROM_PWMOutputState(PWM1_BASE, PWM_OUT_0_BIT|PWM_OUT_1_BIT, true);
+	ROM_PWMOutputState(PWM1_BASE, PWM_OUT_2_BIT|PWM_OUT_3_BIT, true);
 	// Invert output - if true output is active low
-	PWMOutputInvert(PWM1_BASE,PWM_OUT_0_BIT|PWM_OUT_1_BIT, false );
+	PWMOutputInvert(PWM1_BASE,PWM_OUT_2_BIT|PWM_OUT_3_BIT, false );
 	// Enable PWM generator
-	ROM_PWMGenEnable(PWM1_BASE, PWM_GEN_0);
+	ROM_PWMGenEnable(PWM1_BASE, PWM_GEN_1);
 }
 
 void MCInitGpio()
@@ -74,7 +74,7 @@ void MCPwmDutyCycleSet(Motor selectedMotor, uint32_t DutyCycle)
 	if(DutyCycle>0)
 		ROM_PWMPulseWidthSet(PWM1_BASE, selectedMotor, (DutyCycle*LoadValue)/100 );
 	else
-		ROM_PWMPulseWidthSet(PWM1_BASE, selectedMotor, (LoadValue)/100 );
+		ROM_PWMPulseWidthSet(PWM1_BASE, selectedMotor, 1);
 }
 
 void MCChangeMotorState(Motor selectedMotor, MotorState newMotorState)
