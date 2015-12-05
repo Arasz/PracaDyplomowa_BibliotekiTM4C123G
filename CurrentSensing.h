@@ -11,8 +11,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "inc/hw_memmap.h"
+#include "driverlib/pin_map.h"
 #include "inc/hw_types.h"
 #include "driverlib/debug.h"
+#include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/interrupt.h"
 #include "inc/hw_ints.h" //includes valid INT_ values for IntEnable function parameter
