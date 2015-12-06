@@ -23,9 +23,7 @@ void MCInitPwm(uint32_t DutyCycle)
 	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
 
 	// Configure pin PD0 as PWM output
-	GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_6|GPIO_PIN_7, GPIO_STRENGTH_10MA, GPIO_PIN_TYPE_STD);
 	ROM_GPIOPinTypePWM(GPIO_PORTA_BASE, GPIO_PIN_6|GPIO_PIN_7);
-	//GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_6|GPIO_PIN_7, GPIO_STRENGTH_10MA, GPIO_PIN_TYPE_STD);
 	ROM_GPIOPinConfigure(GPIO_PA6_M1PWM2);
 	ROM_GPIOPinConfigure(GPIO_PA7_M1PWM3);
 
@@ -42,7 +40,9 @@ void MCInitPwm(uint32_t DutyCycle)
 	// Enable PWM output 0 and 1
 	ROM_PWMOutputState(PWM1_BASE, PWM_OUT_2_BIT|PWM_OUT_3_BIT, true);
 	// Invert output - if true output is active low
-	PWMOutputInvert(PWM1_BASE,PWM_OUT_2_BIT|PWM_OUT_3_BIT, false );
+	ROM_PWMOutputInvert(PWM1_BASE,PWM_OUT_2_BIT|PWM_OUT_3_BIT, false );
+	// Set PWM Output update mode to local sync ( update when generator count reaches 0)
+	PWMOutputUpdateMode(PWM1_BASE, PWM_OUT_2_BIT|PWM_OUT_3_BIT, PWM_OUTPUT_MODE_SYNC_LOCAL);
 	// Enable PWM generator
 	ROM_PWMGenEnable(PWM1_BASE, PWM_GEN_1);
 }
