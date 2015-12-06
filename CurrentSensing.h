@@ -15,6 +15,7 @@
 #include "inc/hw_types.h"
 #include "driverlib/debug.h"
 #include "driverlib/gpio.h"
+#include "driverlib/pwm.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/interrupt.h"
 #include "inc/hw_ints.h" //includes valid INT_ values for IntEnable function parameter

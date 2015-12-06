@@ -43,8 +43,12 @@ void MCInitPwm(uint32_t DutyCycle)
 	ROM_PWMOutputState(PWM1_BASE, PWM_OUT_2_BIT|PWM_OUT_3_BIT, true);
 	// Invert output - if true output is active low
 	PWMOutputInvert(PWM1_BASE,PWM_OUT_2_BIT|PWM_OUT_3_BIT, false );
+
+	//ROM_PWMGenIntTrigEnable(PWM1_BASE, PWM_GEN_1, PWM_INT_CNT_ZERO | PWM_TR_CNT_LOAD);
+
 	// Enable PWM generator
 	ROM_PWMGenEnable(PWM1_BASE, PWM_GEN_1);
+
 }
 
 void MCInitGpio()
