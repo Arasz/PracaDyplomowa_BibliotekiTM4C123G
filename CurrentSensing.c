@@ -32,7 +32,6 @@ void CSInitADC0(void)
 	//64 measurements being averaged together.
 	//We will then average four of those samples together in our code for a total of 256.
 	ADCHardwareOversampleConfigure(ADC0_BASE, 64);
-
 	//configure the ADC sequencer.
 	ADCSequenceConfigure(ADC0_BASE, 			//use ADC0
 		 	 	 	 	 1, 					// sequencer 1
@@ -75,10 +74,9 @@ void CSInitTimer0(void)
 	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
 
 	/*
-	 * desired frequency = 10Hz
-	 * duty cycle = 50% (interrupt at 1/2 of the desired period)
+	 * desired frequency = 40Hz
 	 */
-	ui32Period = (SysCtlClockGet() / 10) / 2;
+	ui32Period = (SysCtlClockGet() / 40) ;
 
 	/*
 	 * load calculated period into the Timer’s Interval Load register using the TimerLoadSet
