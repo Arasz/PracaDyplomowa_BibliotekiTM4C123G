@@ -13,7 +13,6 @@
 #include "inc/hw_memmap.h"
 #include "driverlib/pin_map.h"
 #include "inc/hw_types.h"
-#include "inc/hw_adc.h"
 #include "driverlib/debug.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pwm.h"
@@ -51,7 +50,7 @@
 	* Calls ADC0_Init, Timer0_Init and Interrupts_Enable function
 	* most general function to be called from the outside
     */
-	void CSInit(void);
+	void CSTInit(void);
 
     /*
 	* Initialize ADC0 sequencer 1
@@ -61,8 +60,14 @@
 	* it also calculate it to get ui32CurrentMotorRight/Left
 	* (results are stored in this variables)
     */
-	void CSInitADC0(void);
+	void CSTInitADC0(void);
 
+    /*
+	* Initialize TIMER0 as ADC trigger
+	* 32 bit periodic timer
+	* frequency = 10Hz
+    */
+	void CSTInitTimer0(void);
 
     /*
 	* Initialize processor, TIM0 and ADC0 interrupts
@@ -70,6 +75,6 @@
 	* to get ADC0 interrupt to work ADC0IntHandler MUST be placed in interrupt vector
 	* (tm4c123gh6pm_startup_ccs.c file) and declared in this file under "extern void _c_int00(void);"
     */
-	void CSEnableInterrupts(void);
+	void CSTEnableInterrupts(void);
 
 #endif /* ADC_ADC_TIMER_INTERRUPT_DEMO_ADC_CONFIG_H_ */

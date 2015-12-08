@@ -2,7 +2,7 @@
  * MotorControl.c
  *
  *  Created on: 15 lis 2015
- *      Author: Rafa³
+ *      Author: Rafal
  */
 
 #include "MotorControl.h"
@@ -15,12 +15,12 @@ PIDControler LeftMotorControler, RigthMotorControler;
 
 void MCInitPwm(uint32_t DutyCycle)
 {
-	// Clock PWM peripheral at SysClk/PWMDIV
-	ROM_SysCtlPWMClockSet(SYSCTL_PWMDIV_64);
-
 	// Enable peripherals
 	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM1);
 	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+
+	// Clock PWM peripheral at SysClk/PWMDIV
+	ROM_SysCtlPWMClockSet(SYSCTL_PWMDIV_64);
 
 	// Configure pin PD0 as PWM output
 	ROM_GPIOPinTypePWM(GPIO_PORTA_BASE, GPIO_PIN_6|GPIO_PIN_7);
@@ -33,6 +33,7 @@ void MCInitPwm(uint32_t DutyCycle)
 	LoadValue = (PWMClock/PWM_FREQUENCY) - 1;
 	// Configure PWM
 	ROM_PWMGenConfigure(PWM1_BASE, PWM_GEN_1, PWM_GEN_MODE_DOWN);
+	ROM_PWMGenIntTrigEnable(PWM1_BASE, PWM_GEN_1, PWM_INT_CNT_ZERO | PWM_TR_CNT_LOAD);
 	ROM_PWMGenPeriodSet(PWM1_BASE, PWM_GEN_1, LoadValue);
 	// Set PWM signal width
 	ROM_PWMPulseWidthSet(PWM1_BASE, PWM_OUT_2, (DutyCycle*LoadValue)/DUTY_CYCLE_DIVIDER);
@@ -42,7 +43,7 @@ void MCInitPwm(uint32_t DutyCycle)
 	// Invert output - if true output is active low
 	ROM_PWMOutputInvert(PWM1_BASE,PWM_OUT_2_BIT|PWM_OUT_3_BIT, false );
 	// Set PWM Output update mode to local sync ( update when generator count reaches 0)
-	ROM_PWMOutputUpdateMode(PWM1_BASE, PWM_OUT_2_BIT|PWM_OUT_3_BIT, PWM_OUTPUT_MODE_SYNC_LOCAL);
+	PWMOutputUpdateMode(PWM1_BASE, PWM_OUT_2_BIT|PWM_OUT_3_BIT, PWM_OUTPUT_MODE_SYNC_LOCAL);
 	// Enable PWM generator
 	ROM_PWMGenEnable(PWM1_BASE, PWM_GEN_1);
 
@@ -54,7 +55,7 @@ void MCInitGpio()
 
 	// PIN1, PIN2 - In1B,In2B (MotorB) ; PIN4,PIN5 - In1A,In2A
 	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTE_BASE,GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_5);
-	GPIOPadConfigSet(GPIO_PORTE_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_5, GPIO_STRENGTH_10MA, GPIO_PIN_TYPE_STD);
+	GPIOPadConfigSet(GPIO_PORTE_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_5, GPIO_STRENGTH_12MA, GPIO_PIN_TYPE_STD);
 }
 
 void MCInitControlHardware(uint32_t DutyCycle)
