@@ -162,24 +162,35 @@ void DecodeMessage(unsigned char UARTNr)
 void CodeMessage(int current1, int current2, unsigned char UARTNr)
 {
 
+	if(current1 < 0)
+	{
+		outBuffer[INDEX_CURRENT_1] = '-';
+		current1 = (-1) * current1;
+	}
+	if(current2 < 0)
+	{
+		outBuffer[INDEX_CURRENT_2] = '-';
+		current2 = (-1) * current2;
+	}
+
 	outBuffer[INDEX_START_BYTE] = START_BYTE;
 	outBuffer[INDEX_STOP_BYTE] = STOP_BYTE;
 
-	outBuffer[INDEX_CURRENT_1] = current1/1000+48;
+	outBuffer[INDEX_CURRENT_1+1] = current1/1000+48;
 	current1 = current1%1000;
-	outBuffer[INDEX_CURRENT_1+1] =  current1/100+48;
+	outBuffer[INDEX_CURRENT_1+2] =  current1/100+48;
 	current1 = current1%100;
-	outBuffer[INDEX_CURRENT_1+2] = current1/10+48;
+	outBuffer[INDEX_CURRENT_1+3] = current1/10+48;
 	current1 = current1%10;
-	outBuffer[INDEX_CURRENT_1+3] = current1+48;
+	outBuffer[INDEX_CURRENT_1+4] = current1+48;
 
-	outBuffer[INDEX_CURRENT_2] = current2/1000+48;
+	outBuffer[INDEX_CURRENT_2+1] = current2/1000+48;
 	current2 = current2%1000;
-	outBuffer[INDEX_CURRENT_2+1] =  current2/100+48;
+	outBuffer[INDEX_CURRENT_2+2] =  current2/100+48;
 	current2 = current2%100;
-	outBuffer[INDEX_CURRENT_2+2] = current2/10+48;
+	outBuffer[INDEX_CURRENT_2+3] = current2/10+48;
 	current2 = current2%10;
-	outBuffer[INDEX_CURRENT_2+3] = current2+48;
+	outBuffer[INDEX_CURRENT_2+4] = current2+48;
 }
 
 void WriteCharToBuffer(unsigned char character, unsigned char UARTNr)

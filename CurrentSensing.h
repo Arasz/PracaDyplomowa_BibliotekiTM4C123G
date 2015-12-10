@@ -37,14 +37,14 @@
 	 */
 	uint32_t ui32ADC0Value[4]; //data buffer
 
-	volatile uint32_t ui32ADC0ValueAvg_CH4; //average value readed from PD3
-	volatile uint32_t ui32ADC0ValueAvg_CH5;	//average value readed from PD2
+	volatile uint32_t ADC0ValueAvg_CH4; //average value readed from PD3
+	volatile uint32_t ADC0ValueAvg_CH5;	//average value readed from PD2
 
-	volatile uint32_t ui32VoltageMotorLeft; //voltage on channel 4 (PD3)
-	volatile uint32_t ui32VoltageMotorRight; //voltage on channel 5 (PD2)
+	volatile uint32_t VoltageHallMotorLeft; //voltage on channel 4 (PD3)
+	volatile uint32_t VoltageHallMotorRight; //voltage on channel 5 (PD2)
 
-	volatile uint32_t ui32CurrentMotorLeft; //current on channel 4 (PD3)
-	volatile uint32_t ui32CurrentMotorRight; //current on channel 5 (PD2)
+	volatile int32_t CurrentMotorLeft; //current on channel 4 (PD3)
+	volatile int32_t CurrentMotorRight; //current on channel 5 (PD2)
 
 
     /*

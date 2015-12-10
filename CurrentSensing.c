@@ -35,7 +35,7 @@ void CSInitADC0(void)
 	//enable Hardware averaging
 	//64 measurements being averaged together.
 	//We will then average four of those samples together in our code for a total of 256.
-	ADCHardwareOversampleConfigure(ADC0_BASE, 64);
+	ADCHardwareOversampleConfigure(ADC0_BASE, 2);
 	//configure the ADC sequencer.
 	ADCSequenceConfigure(ADC0_BASE, 			//use ADC0
 		 	 	 	 	 1, 					// sequencer 1
@@ -44,10 +44,11 @@ void CSInitADC0(void)
 	HWREG(ADC0_BASE + ADC_O_TSSEL) = 0x1000; //TSSEL choose PWM module nr and generator nr!
 	//HWREG(ADC0_BASE + ADC_O_EMUX) = 0x06;
 	 //configure all four steps in the ADC sequencer. CH4 (PD3)
+	ADCPhaseDelaySet(ADC0_BASE, ADC_PHASE_22_5); //phase delay. TODO - check if can be constant! for vel<7 can be wrong
 	ADCSequenceStepConfigure(ADC0_BASE, 1, 0, ADC_CTL_CH4);
-	ADCSequenceStepConfigure(ADC0_BASE, 1, 1, ADC_CTL_CH4);
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 1, ADC_CTL_CH5);
 	 //configure all four steps in the ADC sequencer. CH5 (PD2)
-	ADCSequenceStepConfigure(ADC0_BASE, 1, 2, ADC_CTL_CH5);
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 2, ADC_CTL_CH4);
 	ADCSequenceStepConfigure(ADC0_BASE, //use ADC0
 							1,		 // sequencer 1
 							3,		//step nr
@@ -75,13 +76,15 @@ void ADC0IntHandler(void) {
 	 //read the ADC value from the ADC Sample Sequencer 1 FIFO
 	 ADCSequenceDataGet(ADC0_BASE, 1, ui32ADC0Value);
 	 //calculate average voltage
-	 ui32ADC0ValueAvg_CH4 = (ui32ADC0Value[0] + ui32ADC0Value[1])/2;
+	 ADC0ValueAvg_CH4 = (ui32ADC0Value[0] + ui32ADC0Value[2])/2;
 	 // mV per ADC code = (VREFP - VREFN) * value / 4096
-	 ui32VoltageMotorLeft = 3300 * ui32ADC0ValueAvg_CH4 / 4096; //[mV]*/
-	 ui32CurrentMotorLeft = ui32VoltageMotorLeft * 10 / 22; //R = 2.2 Ohm
+	 VoltageHallMotorLeft = 3300 * ADC0ValueAvg_CH4 / 4096; //[mV]*/
+	 CurrentMotorLeft = VoltageHallMotorLeft * 367 / 50;
+	 CurrentMotorLeft = CurrentMotorLeft - 18300;
 
-	 ui32ADC0ValueAvg_CH5 = (ui32ADC0Value[2] + ui32ADC0Value[3])/2;
+	 ADC0ValueAvg_CH5 = (ui32ADC0Value[1] + ui32ADC0Value[3])/2;
 	 // mV per ADC code = (VREFP - VREFN) * value / 4096
-	 ui32VoltageMotorRight = 3300 * ui32ADC0ValueAvg_CH5 / 4096; //[mV]*/
-	 ui32CurrentMotorRight = ui32VoltageMotorRight * 10 / 22; //R = 2.2 Ohm
+	 VoltageHallMotorRight = 3300 * ADC0ValueAvg_CH5 / 4096; //[mV]*/
+	 CurrentMotorRight = VoltageHallMotorRight * 367 / 50;
+	 CurrentMotorRight = CurrentMotorRight - 18300;
 }

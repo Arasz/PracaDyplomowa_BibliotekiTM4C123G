@@ -39,8 +39,8 @@
 //out message
 #define INDEX_START_BYTE 0
 #define INDEX_CURRENT_1  1
-#define INDEX_CURRENT_2  5
-#define INDEX_STOP_BYTE  9
+#define INDEX_CURRENT_2  6
+#define INDEX_STOP_BYTE  11
 
 #define UART_BLUETOOTH_NR 3
 #define UART_RASPBERRY_NR 4
@@ -48,7 +48,7 @@
  //length of the message
 #define MESSAGE_LENGTH_IN 9 //maximum input message length (contains velocity and angle)
 #define MESSAGE_CONNECTION_LENGTH_IN 3
-#define MESSAGE_LENGTH_OUT 10 //output message length
+#define MESSAGE_LENGTH_OUT 12 //output message length
 #define MESSAGE_CONNECTION_LENGTH_OUT 3
 
 //MAX time to live. determines how quickly state turns to disconnected after when recieving messages
