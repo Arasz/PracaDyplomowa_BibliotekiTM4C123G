@@ -70,7 +70,9 @@ void MCInitControlHardware(uint32_t DutyCycle)
 
 void MCInitControlSoftware(float samplingPeriod)
 {
+	//left - motorA
 	InitControler(&LeftMotorControler, 1, 1, 1, 1, samplingPeriod, 1000, 1000);
+	//right - motorB
 	InitControler(&RigthMotorControler, 1, 1, 1, 1,samplingPeriod, 1000, 1000);
 }
 
@@ -87,10 +89,10 @@ void MCChangeMotorState(Motor selectedMotor, MotorState newMotorState)
 
 	switch(selectedMotor)
 	{
-		case MotorA:
+		case MotorA: //left motor
 			ROM_GPIOPinWrite(GPIO_PORTE_BASE,GPIO_PIN_4|GPIO_PIN_5, newMotorState<<4);
 			break;
-		case MotorB:
+		case MotorB: //right motor
 			ROM_GPIOPinWrite(GPIO_PORTE_BASE,GPIO_PIN_1|GPIO_PIN_2, newMotorState<<1);
 			break;
 		default:

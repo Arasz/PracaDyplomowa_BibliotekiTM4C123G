@@ -5,8 +5,11 @@
  *      Author: Paulina Sadowska
  */
 
-
 #include "CurrentSensing.h"
+
+
+volatile int32_t CurrentBiasLeft = 330;
+volatile int32_t CurrentBiasRight = 400;
 
 void CSInit(void)
 {
@@ -35,7 +38,7 @@ void CSInitADC0(void)
 	//enable Hardware averaging
 	//64 measurements being averaged together.
 	//We will then average four of those samples together in our code for a total of 256.
-	ADCHardwareOversampleConfigure(ADC0_BASE, 2);
+	ADCHardwareOversampleConfigure(ADC0_BASE, 64);
 	//configure the ADC sequencer.
 	ADCSequenceConfigure(ADC0_BASE, 			//use ADC0
 		 	 	 	 	 1, 					// sequencer 1
@@ -77,14 +80,18 @@ void ADC0IntHandler(void) {
 	 ADCSequenceDataGet(ADC0_BASE, 1, ui32ADC0Value);
 	 //calculate average voltage
 	 ADC0ValueAvg_CH4 = (ui32ADC0Value[0] + ui32ADC0Value[2])/2;
-	 // mV per ADC code = (VREFP - VREFN) * value / 4096
-	 VoltageHallMotorLeft = 3300 * ADC0ValueAvg_CH4 / 4096; //[mV]*/
-	 CurrentMotorLeft = VoltageHallMotorLeft * 367 / 50;
-	 CurrentMotorLeft = CurrentMotorLeft - 18300;
-
 	 ADC0ValueAvg_CH5 = (ui32ADC0Value[1] + ui32ADC0Value[3])/2;
+
 	 // mV per ADC code = (VREFP - VREFN) * value / 4096
-	 VoltageHallMotorRight = 3300 * ADC0ValueAvg_CH5 / 4096; //[mV]*/
-	 CurrentMotorRight = VoltageHallMotorRight * 367 / 50;
+	 VoltageHallMotorRight = 3300 * ADC0ValueAvg_CH4 / 4096; //[mV]*
+	 VoltageHallMotorLeft = 3300 * ADC0ValueAvg_CH5 / 4096; //[mV]*/
+
+	 CurrentMotorRight = VoltageHallMotorRight * 36700 / 5000;
 	 CurrentMotorRight = CurrentMotorRight - 18300;
+	 CurrentMotorRight = CurrentMotorRight - CurrentBiasRight;
+
+	 CurrentMotorLeft = VoltageHallMotorLeft * 36700 / 5000;
+	 CurrentMotorLeft = CurrentMotorLeft - 18300;
+	 CurrentMotorLeft = CurrentMotorLeft - CurrentBiasLeft;
+
 }

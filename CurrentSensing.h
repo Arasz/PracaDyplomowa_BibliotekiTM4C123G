@@ -24,6 +24,8 @@
 #include "driverlib/timer.h" //macros for Timer API
 
 
+
+
 	//Sequencer 1 generates 4 samples
 	/* array that will be used for storing the data read from the ADC FIFO.
 	 * Array must be as large as the FIFO for the sequencer in use.
@@ -45,6 +47,10 @@
 
 	volatile int32_t CurrentMotorLeft; //current on channel 4 (PD3)
 	volatile int32_t CurrentMotorRight; //current on channel 5 (PD2)
+
+	extern volatile int32_t CurrentBiasLeft;
+	extern volatile int32_t CurrentBiasRight;
+
 
 
     /*
