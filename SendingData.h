@@ -1,12 +1,12 @@
 /*
- * TIMER_sending_data.h
+ * SendingData.h
  *
  *  Created on: 12 lis 2015
  *      Author: palka
  */
 
-#ifndef TIMER_SENDING_DATA_H_
-#define TIMER_SENDING_DATA_H_
+#ifndef SENDINGDATA_H_
+#define SENDINGDATA_H_
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -28,4 +28,4 @@
  */
 void TSDInitTimer1(unsigned int frequency);
 
-#endif /* TIMER_SENDING_DATA_H_ */
+#endif /* SENDINGDATA_H_ */

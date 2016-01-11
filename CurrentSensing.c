@@ -8,8 +8,8 @@
 #include "CurrentSensing.h"
 
 
-volatile int32_t CurrentBiasLeft = 330;
-volatile int32_t CurrentBiasRight = 400;
+volatile int32_t CurrentBiasLeft = 0;
+volatile int32_t CurrentBiasRight = 0;
 
 void CSInit(void)
 {
@@ -90,7 +90,7 @@ void ADC0IntHandler(void) {
 	 CurrentMotorRight = CurrentMotorRight - 18300;
 	 CurrentMotorRight = CurrentMotorRight - CurrentBiasRight;
 
-	 CurrentMotorLeft = VoltageHallMotorLeft * 36700 / 5000;
+	 CurrentMotorLeft = VoltageHallMotorLeft * 36700 / 3300;
 	 CurrentMotorLeft = CurrentMotorLeft - 18300;
 	 CurrentMotorLeft = CurrentMotorLeft - CurrentBiasLeft;
 

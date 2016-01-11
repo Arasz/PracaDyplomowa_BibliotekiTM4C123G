@@ -1,10 +1,10 @@
 /*
- * TIMER_sending_data.c
+ * SendingData.c
  *
  *  Created on: 12 lis 2015
  *      Author: palka
  */
-#include "TIMER_sending_data.h"
+#include "SendingData.h"
 
 void Timer1IntHandler(void)
 {
