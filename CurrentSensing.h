@@ -22,9 +22,14 @@
 #include "inc/hw_ints.h" //includes valid INT_ values for IntEnable function parameter
 #include "driverlib/adc.h" //definitions for using the ADC driverS
 #include "driverlib/timer.h" //macros for Timer API
+#include <math.h>
+#include "driverlib/fpu.h"
 
+#define SUPPLY_VOLTAGE_x10nV 32700 //supply voltage [10-4 V]
 
-
+#define ALPHA 0.21
+#define BETA 0.05
+#define dT 0.01
 
 	//Sequencer 1 generates 4 samples
 	/* array that will be used for storing the data read from the ADC FIFO.
@@ -48,9 +53,23 @@
 	volatile int32_t CurrentMotorLeft; //current on channel 4 (PD3)
 	volatile int32_t CurrentMotorRight; //current on channel 5 (PD2)
 
-	extern volatile int32_t CurrentBiasLeft;
-	extern volatile int32_t CurrentBiasRight;
+	//extern volatile int32_t CurrentBiasLeft;
+	//extern volatile int32_t CurrentBiasRight;
 
+
+	volatile float CurrentMotorLeftFiltered;
+	volatile float CurrentMotorRightFiltered;
+
+	//APLHA BETA FILTER VARIABLES
+	extern volatile float CurrentPriLeft;
+	extern volatile float CurrentPostLeft;
+	extern volatile float ChangeCurrentPriLeft;
+	extern volatile float ChangeCurrentPostLeft;
+
+	extern volatile float CurrentPriRight;
+	extern volatile float CurrentPostRight;
+	extern volatile float ChangeCurrentPriRight;
+	extern volatile float ChangeCurrentPostRight;
 
 
     /*
@@ -77,5 +96,8 @@
 	* (tm4c123gh6pm_startup_ccs.c file) and declared in this file under "extern void _c_int00(void);"
     */
 	void CSEnableInterrupts(void);
+
+	//Filter measured current
+	void CSAlphaBetaFilter();
 
 #endif /* ADC_ADC_TIMER_INTERRUPT_DEMO_ADC_CONFIG_H_ */

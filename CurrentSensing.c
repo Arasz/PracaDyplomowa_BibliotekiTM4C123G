@@ -8,8 +8,21 @@
 #include "CurrentSensing.h"
 
 
-volatile int32_t CurrentBiasLeft = 0;
-volatile int32_t CurrentBiasRight = 0;
+//volatile int32_t CurrentBiasLeft = 0;
+//volatile int32_t CurrentBiasRight = 0;
+
+
+//APLHA BETA FILTER VARIABLES
+volatile float CurrentPriLeft = 0.0;
+volatile float CurrentPostLeft = 0.0;
+volatile float ChangeCurrentPriLeft = 0.0;
+volatile float ChangeCurrentPostLeft = 0.0;
+
+volatile float CurrentPriRight = 0.0;
+volatile float CurrentPostRight = 0.0;
+volatile float ChangeCurrentPriRight = 0.0;
+volatile float ChangeCurrentPostRight = 0.0;
+
 
 void CSInit(void)
 {
@@ -43,11 +56,12 @@ void CSInitADC0(void)
 	ADCSequenceConfigure(ADC0_BASE, 			//use ADC0
 		 	 	 	 	 1, 					// sequencer 1
 					     ADC_TRIGGER_PWM1,   	//pwm triggers sequence
+					     //ADC_TRIGGER_ALWAYS,
 					     0); 					//highest priority
 	HWREG(ADC0_BASE + ADC_O_TSSEL) = 0x1000; //TSSEL choose PWM module nr and generator nr!
 	//HWREG(ADC0_BASE + ADC_O_EMUX) = 0x06;
 	 //configure all four steps in the ADC sequencer. CH4 (PD3)
-	ADCPhaseDelaySet(ADC0_BASE, ADC_PHASE_22_5); //phase delay. TODO - check if can be constant! for vel<7 can be wrong
+	ADCPhaseDelaySet(ADC0_BASE, ADC_PHASE_45); //phase delay.
 	ADCSequenceStepConfigure(ADC0_BASE, 1, 0, ADC_CTL_CH4);
 	ADCSequenceStepConfigure(ADC0_BASE, 1, 1, ADC_CTL_CH5);
 	 //configure all four steps in the ADC sequencer. CH5 (PD2)
@@ -83,15 +97,36 @@ void ADC0IntHandler(void) {
 	 ADC0ValueAvg_CH5 = (ui32ADC0Value[1] + ui32ADC0Value[3])/2;
 
 	 // mV per ADC code = (VREFP - VREFN) * value / 4096
-	 VoltageHallMotorRight = 3300 * ADC0ValueAvg_CH4 / 4096; //[mV]*
-	 VoltageHallMotorLeft = 3300 * ADC0ValueAvg_CH5 / 4096; //[mV]*/
+	 VoltageHallMotorRight = 33000 * ADC0ValueAvg_CH4 / 4096; //[10-4V]*
+	 VoltageHallMotorLeft = 33000 * ADC0ValueAvg_CH5 / 4096; //[10-4V]*/
 
-	 CurrentMotorRight = VoltageHallMotorRight * 36700 / 5000;
-	 CurrentMotorRight = CurrentMotorRight - 18300;
-	 CurrentMotorRight = CurrentMotorRight - CurrentBiasRight;
+	 CurrentMotorRight = VoltageHallMotorRight * 36700 / SUPPLY_VOLTAGE_x10nV;
+	 CurrentMotorRight = CurrentMotorRight - 18350;
+	 CurrentMotorRight = CurrentMotorRight;// - CurrentBiasRight;
 
-	 CurrentMotorLeft = VoltageHallMotorLeft * 36700 / 3300;
-	 CurrentMotorLeft = CurrentMotorLeft - 18300;
-	 CurrentMotorLeft = CurrentMotorLeft - CurrentBiasLeft;
+	 CurrentMotorLeft = VoltageHallMotorLeft * 36700 / SUPPLY_VOLTAGE_x10nV;
+	 CurrentMotorLeft = CurrentMotorLeft - 18350;
+	 CurrentMotorLeft = CurrentMotorLeft;// - CurrentBiasLeft;
 
+	 CSAlphaBetaFilter();
 }
+
+void CSAlphaBetaFilter()
+{
+	//left current sensor
+	CurrentPriLeft = CurrentPostLeft + dT * ChangeCurrentPostLeft;
+	ChangeCurrentPriLeft = ChangeCurrentPostLeft;
+	CurrentPostLeft = CurrentPriLeft + ALPHA * (CurrentMotorLeft - CurrentPriLeft);
+	ChangeCurrentPostLeft = ChangeCurrentPriLeft + (BETA*(CurrentMotorLeft - CurrentPriLeft))/dT;
+
+	CurrentMotorLeftFiltered = CurrentPostLeft;
+
+	//right current sensor
+	CurrentPriRight = CurrentPostRight + dT * ChangeCurrentPostRight;
+	ChangeCurrentPriRight = ChangeCurrentPostRight;
+	CurrentPostRight = CurrentPriRight + ALPHA * (CurrentMotorRight - CurrentPriRight);
+	ChangeCurrentPostRight = ChangeCurrentPriRight + (BETA*(CurrentMotorRight - CurrentPriRight))/dT;
+
+	CurrentMotorRightFiltered = CurrentPostRight;
+}
+
