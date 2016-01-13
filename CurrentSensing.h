@@ -27,9 +27,9 @@
 
 #define SUPPLY_VOLTAGE_x10nV 32700 //supply voltage [10-4 V]
 
-#define ALPHA 0.21
-#define BETA 0.05
-#define dT 0.01
+#define ALPHA 0.005
+#define BETA 0.0001
+#define dT 0.001
 
 	//Sequencer 1 generates 4 samples
 	/* array that will be used for storing the data read from the ADC FIFO.
@@ -77,6 +77,14 @@
 	* most general function to be called from the outside
     */
 	void CSInit(void);
+
+    /*
+	* Initialize TIMER0 as ADC trigger
+	* 32 bit periodic timer
+	* frequency = 10Hz
+    */
+	void CSInitTimer0(void);
+
 
     /*
 	* Initialize ADC0 sequencer 1
