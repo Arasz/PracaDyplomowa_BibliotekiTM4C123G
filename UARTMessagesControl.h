@@ -85,17 +85,67 @@ extern bool UARTDataChanged;
 //EventHandler
 void(*UartDataChangedEventHandler)(void);
 
-//gets character and create incoming void WriteCharToBuffer(unsigned char character);
-//message in inBuffer
+/*
+ * gets character and create incoming message
+ * checks start and stop bytes
+ * then writes message into buffer
+ * using function void WriteChar(unsigned char character, unsigned char UARTNr);
+ * params:
+ * unsigned char character - character to write
+ * unsigned char UARTNr - number od UART device
+ */
+
 void WriteCharToBuffer(unsigned char character, unsigned char UARTNr);
+
+/*
+ * writes character to buffer given by UARTNr.
+ * params:
+ * unsigned char character - character to write
+ * unsigned char UARTNr - number od UART device
+ */
 void WriteChar(unsigned char character, unsigned char UARTNr);
+
+/*
+ * Analyze message in device buffer
+ * and decodes it
+ * writing received value to variables:
+ * moveRobotFlag, drivingAngle and velocity
+ * params:
+ * unsigned char UARTNr - number od UART device
+ */
 void DecodeMessage(unsigned char UARTNr);
+
+/*
+ * Gets current values, translate it to message to send
+ * and write it in buffer given by device number (UARTNr)
+ * params:
+ * int current1 - readed current value nr 1
+ * int current2 - readed current value nr 2
+ * unsigned char UARTNr - number od UART device
+ */
 void CodeMessage(int current1, int current2, unsigned char UARTNr);
 //void CodeAcknowlegeMessage(bool error, unsigned char UARTNr);
+
+/*
+ * Sends message from buffer via UART
+ * to specific device
+ * params:
+ * unsigned char UARTNr - number od UART device
+ * bool connectionMessage - if message is connection status message
+ */
 void SendMessage(unsigned char UARTNr, bool connectionMessage);
+
+/*
+ * event called whan Uart data changed
+ */
 void OnUartDataChangedEvent();
 void UARTDataChangedSubscribe(void(*uartDataChangedEventHandler)(void));
+
+/*
+ * chooses right out buffer basing on UARTNr
+ * params:
+ * unsigned char UARTNr - number od UART device
+ */
 void ChooseInBuffer(unsigned char UARTNr);
-void ChooseOutBuffer(unsigned char UARTNr);
 
 #endif /* UART3_MESSAGES_CONTROL_H_ */

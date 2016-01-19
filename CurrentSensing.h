@@ -25,11 +25,15 @@
 #include <math.h>
 #include "driverlib/fpu.h"
 
+#include "UARTMessagesControl.h"
+
 #define SUPPLY_VOLTAGE_x10nV 32700 //supply voltage [10-4 V]
 
 #define ALPHA 0.005
 #define BETA 0.0001
 #define dT 0.001
+
+#define BATTERY_VOLTAGE_SENSOR_MIN 27000 //27000*10-4V (2.7V) on sensor when on battery: 6.67V
 
 	//Sequencer 1 generates 4 samples
 	/* array that will be used for storing the data read from the ADC FIFO.
@@ -44,8 +48,12 @@
 	 */
 	uint32_t ui32ADC0Value[4]; //data buffer
 
+	volatile uint32_t BatteryVoltageSensor;
+	extern volatile bool BatteryStateOK;
+
 	volatile uint32_t ADC0ValueAvg_CH4; //average value readed from PD3
 	volatile uint32_t ADC0ValueAvg_CH5;	//average value readed from PD2
+	volatile uint32_t ADC0ValueAvg_CH6;	//average value readed from PD1
 
 	volatile uint32_t VoltageHallMotorLeft; //voltage on channel 4 (PD3)
 	volatile uint32_t VoltageHallMotorRight; //voltage on channel 5 (PD2)
@@ -53,9 +61,8 @@
 	volatile int32_t CurrentMotorLeft; //current on channel 4 (PD3)
 	volatile int32_t CurrentMotorRight; //current on channel 5 (PD2)
 
-	//extern volatile int32_t CurrentBiasLeft;
-	//extern volatile int32_t CurrentBiasRight;
-
+	extern volatile int32_t CurrentBiasLeft;
+	extern volatile int32_t CurrentBiasRight;
 
 	volatile float CurrentMotorLeftFiltered;
 	volatile float CurrentMotorRightFiltered;
@@ -96,6 +103,12 @@
     */
 	void CSInitADC0(void);
 
+	/*
+	 * Initializa PF1
+	 * (red build on diode)
+	 */
+	void CSInitRedLed(void);
+
 
     /*
 	* Initialize processor, TIM0 and ADC0 interrupts
@@ -105,7 +118,10 @@
     */
 	void CSEnableInterrupts(void);
 
-	//Filter measured current
+	/*
+	 * Filter measured current
+	 * taking into accout alpha and beta factors
+	 */
 	void CSAlphaBetaFilter();
 
 #endif /* ADC_ADC_TIMER_INTERRUPT_DEMO_ADC_CONFIG_H_ */

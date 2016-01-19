@@ -7,9 +7,10 @@
 
 #include "CurrentSensing.h"
 
+volatile bool BatteryStateOK = true;
 
-//volatile int32_t CurrentBiasLeft = 0;
-//volatile int32_t CurrentBiasRight = 0;
+volatile int32_t CurrentBiasLeft = 0;
+volatile int32_t CurrentBiasRight = 0;
 
 
 //APLHA BETA FILTER VARIABLES
@@ -28,6 +29,7 @@ void CSInit(void)
 {
 	CSInitADC0();
 	CSInitTimer0();
+	CSInitRedLed();
 	CSEnableInterrupts();
 }
 
@@ -47,7 +49,7 @@ void CSInitADC0(void)
 	//enable ADC0 peripheral
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
-	GPIOPinTypeADC(GPIO_PORTD_BASE, GPIO_PIN_2 | GPIO_PIN_3);
+	GPIOPinTypeADC(GPIO_PORTD_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
 
 	//enable Hardware averaging
 	//64 measurements being averaged together.
@@ -58,15 +60,10 @@ void CSInitADC0(void)
 		 	 	 	 	 1, 					// sequencer 1
 					     ADC_TRIGGER_TIMER,   	//pwm triggers sequence
 					     0); 					//highest priority
-	 //configure all four steps in the ADC sequencer. CH4 (PD3)
+	 //configure all four steps in the ADC sequencer. CH4 (PD3), CH5 (PD2) and CH6 (PD1)
 	ADCSequenceStepConfigure(ADC0_BASE, 1, 0, ADC_CTL_CH4);
 	ADCSequenceStepConfigure(ADC0_BASE, 1, 1, ADC_CTL_CH5);
-	 //configure all four steps in the ADC sequencer. CH5 (PD2)
-	ADCSequenceStepConfigure(ADC0_BASE, 1, 2, ADC_CTL_CH4);
-	ADCSequenceStepConfigure(ADC0_BASE, //use ADC0
-							1,		 // sequencer 1
-							3,		//step nr
-							ADC_CTL_CH5 | 		//Chanel 5 : PD2
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 2, ADC_CTL_CH6 | 		//Chanel 6 : PD1
 							ADC_CTL_IE| 	//configure the interrupt flag (ADC_CTL_IE) to be set when the sample is done
 							ADC_CTL_END);	//last conversion on sequencer
 
@@ -90,22 +87,48 @@ void ADC0IntHandler(void) {
 	 //read the ADC value from the ADC Sample Sequencer 1 FIFO
 	 ADCSequenceDataGet(ADC0_BASE, 1, ui32ADC0Value);
 	 //calculate average voltage
-	 ADC0ValueAvg_CH4 = (ui32ADC0Value[0] + ui32ADC0Value[2])/2;
-	 ADC0ValueAvg_CH5 = (ui32ADC0Value[1] + ui32ADC0Value[3])/2;
+	 ADC0ValueAvg_CH4 = ui32ADC0Value[0];
+	 ADC0ValueAvg_CH5 = ui32ADC0Value[1];
+	 ADC0ValueAvg_CH6 = ui32ADC0Value[2];
 
 	 // mV per ADC code = (VREFP - VREFN) * value / 4096
-	 VoltageHallMotorRight = 33000 * ADC0ValueAvg_CH4 / 4096; //[10-4V]*
-	 VoltageHallMotorLeft = 33000 * ADC0ValueAvg_CH5 / 4096; //[10-4V]*/
+	 VoltageHallMotorRight = 33000 * ADC0ValueAvg_CH4 / 4096; //[10-4V]
+	 VoltageHallMotorLeft = 33000 * ADC0ValueAvg_CH5 / 4096; //[10-4V]
+	 BatteryVoltageSensor = 33000 * ADC0ValueAvg_CH6 / 4096; //[10-4V]
 
 	 CurrentMotorRight = VoltageHallMotorRight * 36700 / SUPPLY_VOLTAGE_x10nV;
 	 CurrentMotorRight = CurrentMotorRight - 18350;
-	 CurrentMotorRight = CurrentMotorRight;// - CurrentBiasRight;
 
 	 CurrentMotorLeft = VoltageHallMotorLeft * 36700 / SUPPLY_VOLTAGE_x10nV;
 	 CurrentMotorLeft = CurrentMotorLeft - 18350;
-	 CurrentMotorLeft = CurrentMotorLeft;// - CurrentBiasLeft;
+
+	if(!moveRobotFlag)
+	{
+		//calibrate measurement in 0mA
+		CurrentBiasLeft = CurrentMotorLeft;
+		CurrentBiasRight = CurrentMotorRight;
+		//check bettery voltage
+		if(BatteryVoltageSensor<BATTERY_VOLTAGE_SENSOR_MIN)
+		{
+			GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0xFF); //turn red led on
+		}
+		else
+		{
+			GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0x00); //turn red led off
+		}
+	}
+	CurrentMotorRight = CurrentMotorRight - CurrentBiasRight;
+	CurrentMotorLeft = CurrentMotorLeft - CurrentBiasLeft;
 
 	 CSAlphaBetaFilter();
+}
+
+void CSInitRedLed(void)//init red build on led
+{
+	//init PF1 (red build on led
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+	GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_1);
+	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0x00); //turn red led off
 }
 
 void CSInitTimer0(void)
@@ -137,7 +160,6 @@ void CSInitTimer0(void)
 	TimerControlTrigger(TIMER0_BASE, TIMER_A, true);
 	TimerEnable(TIMER0_BASE, TIMER_A); //enable timerA
 }
-
 
 void CSAlphaBetaFilter()
 {
