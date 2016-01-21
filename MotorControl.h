@@ -22,7 +22,7 @@
 
 /* Defined values */
 
-#define PWM_FREQUENCY 100
+#define PWM_FREQUENCY 22000
 
 /** Defined types */
 
