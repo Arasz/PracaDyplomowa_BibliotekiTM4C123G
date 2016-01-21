@@ -31,7 +31,7 @@
 
 #define ALPHA 0.005
 #define BETA 0.0001
-#define dT 0.001
+#define dT 0.0001
 
 #define BATTERY_VOLTAGE_SENSOR_MIN 66700 //*10-4V (2.7V on sensor) on battery: 6.67V
 

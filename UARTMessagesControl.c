@@ -167,11 +167,16 @@ void CodeMessage(int current1, int current2, unsigned char UARTNr)
 		outBuffer[INDEX_CURRENT_1] = '-';
 		current1 = (-1) * current1;
 	}
+	else
+		outBuffer[INDEX_CURRENT_1] = '+';
+
 	if(current2 < 0)
 	{
 		outBuffer[INDEX_CURRENT_2] = '-';
 		current2 = (-1) * current2;
 	}
+	else
+		outBuffer[INDEX_CURRENT_2] = '+';
 
 	outBuffer[INDEX_START_BYTE] = START_BYTE;
 	outBuffer[INDEX_STOP_BYTE] = STOP_BYTE;

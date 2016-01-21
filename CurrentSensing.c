@@ -109,6 +109,7 @@ void ADC0IntHandler(void) {
 		CurrentBiasLeft = CurrentMotorLeft;
 		CurrentBiasRight = CurrentMotorRight;
 	}
+
 	//check bettery voltage
 	if(BatteryVoltageSensor<BATTERY_VOLTAGE_SENSOR_MIN)
 	{
