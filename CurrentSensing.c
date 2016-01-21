@@ -92,9 +92,10 @@ void ADC0IntHandler(void) {
 	 ADC0ValueAvg_CH6 = ui32ADC0Value[2];
 
 	 // mV per ADC code = (VREFP - VREFN) * value / 4096
-	 VoltageHallMotorRight = 33000 * ADC0ValueAvg_CH4 / 4096; //[10-4V]
-	 VoltageHallMotorLeft = 33000 * ADC0ValueAvg_CH5 / 4096; //[10-4V]
-	 BatteryVoltageSensor = 33000 * ADC0ValueAvg_CH6 / 4096; //[10-4V]
+	 VoltageHallMotorRight = 33000 * ADC0ValueAvg_CH5 / 4096; //[10-4V]
+	 VoltageHallMotorLeft = 33000 * ADC0ValueAvg_CH4 / 4096; //[10-4V]
+	 BatteryVoltageSensor = 247 * 330 * ADC0ValueAvg_CH6 / 4096; //[10-4V]
+
 
 	 CurrentMotorRight = VoltageHallMotorRight * 36700 / SUPPLY_VOLTAGE_x10nV;
 	 CurrentMotorRight = CurrentMotorRight - 18350;
@@ -107,15 +108,15 @@ void ADC0IntHandler(void) {
 		//calibrate measurement in 0mA
 		CurrentBiasLeft = CurrentMotorLeft;
 		CurrentBiasRight = CurrentMotorRight;
-		//check bettery voltage
-		if(BatteryVoltageSensor<BATTERY_VOLTAGE_SENSOR_MIN)
-		{
-			GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0xFF); //turn red led on
-		}
-		else
-		{
-			GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0x00); //turn red led off
-		}
+	}
+	//check bettery voltage
+	if(BatteryVoltageSensor<BATTERY_VOLTAGE_SENSOR_MIN)
+	{
+		GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0xFF); //turn red led on
+	}
+	else
+	{
+		GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0x00); //turn red led off
 	}
 	CurrentMotorRight = CurrentMotorRight - CurrentBiasRight;
 	CurrentMotorLeft = CurrentMotorLeft - CurrentBiasLeft;

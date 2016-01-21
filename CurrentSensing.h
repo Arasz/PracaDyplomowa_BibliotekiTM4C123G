@@ -33,7 +33,7 @@
 #define BETA 0.0001
 #define dT 0.001
 
-#define BATTERY_VOLTAGE_SENSOR_MIN 27000 //27000*10-4V (2.7V) on sensor when on battery: 6.67V
+#define BATTERY_VOLTAGE_SENSOR_MIN 66700 //*10-4V (2.7V on sensor) on battery: 6.67V
 
 	//Sequencer 1 generates 4 samples
 	/* array that will be used for storing the data read from the ADC FIFO.
