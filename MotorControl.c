@@ -7,7 +7,7 @@
 
 #include "MotorControl.h"
 
-#define DUTY_CYCLE_DIVIDER 100
+#define DUTY_CYCLE_DIVIDER 22000
 
 uint32_t LoadValue; //< PWM counter load value
 
