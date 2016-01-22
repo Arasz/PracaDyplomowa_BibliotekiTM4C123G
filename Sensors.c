@@ -1,11 +1,11 @@
 /*
- * adc_config.c
+ * Sensors.c
  *
  *  Created on: 8 lis 2015
  *      Author: Paulina Sadowska
  */
 
-#include "CurrentSensing.h"
+#include "Sensors.h"
 
 volatile bool BatteryStateOK = true;
 
@@ -25,15 +25,15 @@ volatile float ChangeCurrentPriRight = 0.0;
 volatile float ChangeCurrentPostRight = 0.0;
 
 
-void CSInit(void)
+void SInit(void)
 {
-	CSInitADC0();
-	CSInitTimer0();
-	CSInitRedLed();
-	CSEnableInterrupts();
+	SInitADC0();
+	SInitTimer0();
+	SInitRedLed();
+	SEnableInterrupts();
 }
 
-void CSEnableInterrupts(void)
+void SEnableInterrupts(void)
 {
 	IntMasterEnable();
 	//ADC INTERRUPTS
@@ -44,7 +44,7 @@ void CSEnableInterrupts(void)
 
 }
 
-void CSInitADC0(void)
+void SInitADC0(void)
 {
 	//enable ADC0 peripheral
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
@@ -122,10 +122,10 @@ void ADC0IntHandler(void) {
 	CurrentMotorRight = CurrentMotorRight - CurrentBiasRight;
 	CurrentMotorLeft = CurrentMotorLeft - CurrentBiasLeft;
 
-	 CSAlphaBetaFilter();
+	 SAlphaBetaFilter();
 }
 
-void CSInitRedLed(void)//init red build on led
+void SInitRedLed(void)//init red build on led
 {
 	//init PF1 (red build on led
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
@@ -133,7 +133,7 @@ void CSInitRedLed(void)//init red build on led
 	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0x00); //turn red led off
 }
 
-void CSInitTimer0(void)
+void SInitTimer0(void)
 {
 	uint32_t ui32Period; //desired clock period
 
@@ -163,7 +163,7 @@ void CSInitTimer0(void)
 	TimerEnable(TIMER0_BASE, TIMER_A); //enable timerA
 }
 
-void CSAlphaBetaFilter()
+void SAlphaBetaFilter()
 {
 	//left current sensor
 	CurrentPriLeft = CurrentPostLeft + dT * ChangeCurrentPostLeft;
