@@ -34,23 +34,21 @@ typedef enum MotorType
 
 typedef enum MotorStateType
 {
-	SOFT_BREAK = 0x0,
 	ROT_CW = 0x1,
 	ROT_CCW = 0x2,
-	HARD_BREAK = 0x3,
+	HARD_BREAK = 0x3, // 0x00
 } MotorState;
 
 typedef struct Contorler
 {
-	float Kp;
-	float Ki;
-	float Kd;
-	float b;
-	float sum;
-	float lastError;
-	float dt;
-	float posOutputLimit;
-	float negOutputLimit;
+	float Kp;  // proportional gain
+	float Ki; // integral gain
+	float Kd; // derivative gain
+	float Sum; // sum of control errors
+	float LastError; // last control error
+	float Ts; // sampling time
+	float OutputLimit; // control signal limit
+	float AntiWindupLimit; // atni-windup calculus limit
 }PIDControler;
 
 /* Global values */
@@ -68,8 +66,10 @@ void MCInitControlHardware(uint32_t DutyCycle);
 void MCPwmDutyCycleSet(Motor selectedMotor, uint32_t DutyCycle);
 void MCChangeMotorState(Motor selectedMotor, MotorState newMotorState);
 
-float CalculateMotorControl(PIDControler controler, float setpoint, float measure);
-void InitControler(PIDControler* controler, float Kp, float Ki, float Kd, float b, float dt, float posOutputLimit, float negOutputLimit);
+float CalculateMotorControl(PIDControler* controler, float setpoint,
+		float measure);
+void InitControler(PIDControler* controler, float kp, float ki, float kd,
+		float ts, float outputLimit, float antiWindupLimit);
 /// \brief Inits motors controlers
 void MCInitControlSoftware(float samplingPeriod);
 

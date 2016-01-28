@@ -43,7 +43,7 @@ void MCInitPwm(uint32_t DutyCycle)
 	// Invert output - if true output is active low
 	ROM_PWMOutputInvert(PWM1_BASE,PWM_OUT_2_BIT|PWM_OUT_3_BIT, false );
 	// Set PWM Output update mode to local sync ( update when generator count reaches 0)
-	PWMOutputUpdateMode(PWM1_BASE, PWM_OUT_2_BIT|PWM_OUT_3_BIT, PWM_OUTPUT_MODE_SYNC_LOCAL);
+	ROM_PWMOutputUpdateMode(PWM1_BASE, PWM_OUT_2_BIT|PWM_OUT_3_BIT, PWM_OUTPUT_MODE_SYNC_LOCAL);
 	// Enable PWM generator
 	ROM_PWMGenEnable(PWM1_BASE, PWM_GEN_1);
 
@@ -55,7 +55,7 @@ void MCInitGpio()
 
 	// PIN1, PIN2 - In1B,In2B (MotorB) ; PIN4,PIN5 - In1A,In2A
 	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTE_BASE,GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_5);
-	GPIOPadConfigSet(GPIO_PORTE_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_5, GPIO_STRENGTH_12MA, GPIO_PIN_TYPE_STD);
+	ROM_GPIOPadConfigSet(GPIO_PORTE_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_5, GPIO_STRENGTH_12MA, GPIO_PIN_TYPE_STD);
 }
 
 void MCInitControlHardware(uint32_t DutyCycle)
@@ -71,9 +71,9 @@ void MCInitControlHardware(uint32_t DutyCycle)
 void MCInitControlSoftware(float samplingPeriod)
 {
 	//left - motorA
-	InitControler(&LeftMotorControler, 1, 1, 1, 1, samplingPeriod, 1000, 1000);
+	InitControler(&LeftMotorControler, 1, 1, 1, samplingPeriod, 1000, 1000);
 	//right - motorB
-	InitControler(&RigthMotorControler, 1, 1, 1, 1,samplingPeriod, 1000, 1000);
+	InitControler(&RigthMotorControler, 1, 1, 1, samplingPeriod, 1000, 1000);
 }
 
 void MCPwmDutyCycleSet(Motor selectedMotor, uint32_t DutyCycle)
@@ -102,44 +102,62 @@ void MCChangeMotorState(Motor selectedMotor, MotorState newMotorState)
 	}
 }
 
-void InitControler(PIDControler* controler, float Kp, float Ki, float Kd, float b, float dt, float posOutputLimit, float negOutputLimit)
+void InitControler(PIDControler* controler, float kp, float ki, float kd,
+		float ts, float outputLimit, float antiWindupLimit)
 {
-	controler->Kp = Kp;
-	controler->Ki = Ki;
-	controler->Kd = Kd;
-	controler->b = b;
-	controler->dt = dt;
-	controler->posOutputLimit = posOutputLimit;
-	controler->negOutputLimit = negOutputLimit;
-	controler->lastError = 0;
-	controler->sum = 0;
+	controler->Kp = kp;
+	controler->Ki = ki;
+	controler->Kd = kd;
+	controler->Ts = ts;
+	controler->OutputLimit = outputLimit;
+	controler->AntiWindupLimit = antiWindupLimit;
+	controler->LastError = 0;
+	controler->Sum = 0;
 }
 
-float CalculateMotorControl(PIDControler controler, float setpoint, float measurement)
+/**
+ * @brief Calculates control dignal
+ * @param controler PID controler which wil be used in calculations
+ * @param setpoint desirable object output
+ * @param measurement measured object output
+ */
+float CalculateControlSignal(PIDControler* controler, float setpoint,
+		float measurement)
 {
-	float error = setpoint - measurement; // Control error
+	// Calculate control error
+	float error = setpoint - measurement;
+	// Update errors sum for future integral calculations
+	controler->Sum += error;
+	// Calculate proportional term
+	float proportional = error*controler->Kp;
+	// Calculate integral term
+	float integral = (controler->Sum*controler->Ts)*controler->Ki;
 
-	controler.sum += error; // Update errors sum for future integral calculations
+	// Windup compensation
+	if(integral > controler->AntiWindupLimit)
+		integral = controler->AntiWindupLimit;
+	else if(integral < -controler->AntiWindupLimit)
+		integral = - controler->AntiWindupLimit;
 
-	float proportional = (controler.b*setpoint - measurement)*controler.Kp;
-	float integral = (controler.sum*controler.dt)*controler.Ki;
 	float controlSignal = 0;
 
-	if(controler.Kd != 0) // Derivative term is less frequently calculated.
+	if(controler->Kd != 0)
 	{
-		float deltaError = error - controler.lastError;
-		float derivative = (deltaError/controler.dt)*controler.Kd;
-		controler.lastError = error;
+		// Derivative term is less frequently calculated
+
+		float deltaError = error - controler->LastError;
+		float derivative = (deltaError/controler->Ts)*controler->Kd;
+		controler->LastError = error;
 		controlSignal = derivative;
 	}
 
 	controlSignal += proportional + integral;
 
-	// Anti wind-up
-	if(controlSignal > controler.posOutputLimit)
-		controlSignal = controler.posOutputLimit;
-	else if(controlSignal < controler.negOutputLimit)
-		controlSignal = controler.negOutputLimit;
+	// Output limit
+	if(controlSignal > controler->OutputLimit)
+		controlSignal = controler->OutputLimit;
+	else if(controlSignal < -controler->OutputLimit)
+		controlSignal = -controler->OutputLimit;
 
 	return controlSignal;
 }
