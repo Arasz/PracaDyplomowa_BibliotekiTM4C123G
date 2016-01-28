@@ -19,7 +19,7 @@
 #include "driverlib/timer.h" //macros for Timer API
 
 #include "UARTMessagesControl.h"
-#include "CurrentSensing.h"
+#include "Sensors.h"
 
 /* Initialize Timer 1 used to
  * periodically send data via UART

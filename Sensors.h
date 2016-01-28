@@ -1,12 +1,12 @@
 /*
- * adc_config.h
+ * Sensors.h
  *
  *  Created on: 8 lis 2015
  *      Author: palka
  */
 
-#ifndef ADC_ADC_TIMER_INTERRUPT_DEMO_ADC_CONFIG_H_
-#define ADC_ADC_TIMER_INTERRUPT_DEMO_ADC_CONFIG_H_
+#ifndef SENSORS_H_
+#define SENSORS_H_
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -31,9 +31,9 @@
 
 #define ALPHA 0.005
 #define BETA 0.0001
-#define dT 0.001
+#define dT 0.0001
 
-#define BATTERY_VOLTAGE_SENSOR_MIN 27000 //27000*10-4V (2.7V) on sensor when on battery: 6.67V
+#define BATTERY_VOLTAGE_SENSOR_MIN 66700 //*10-4V (2.7V on sensor) on battery: 6.67V
 
 	//Sequencer 1 generates 4 samples
 	/* array that will be used for storing the data read from the ADC FIFO.
@@ -83,14 +83,14 @@
 	* Calls ADC0_Init, Timer0_Init and Interrupts_Enable function
 	* most general function to be called from the outside
     */
-	void CSInit(void);
+	void SInit(void);
 
     /*
 	* Initialize TIMER0 as ADC trigger
 	* 32 bit periodic timer
 	* frequency = 10Hz
     */
-	void CSInitTimer0(void);
+	void SInitTimer0(void);
 
 
     /*
@@ -101,13 +101,13 @@
 	* it also calculate it to get ui32CurrentMotorRight/Left
 	* (results are stored in this variables)
     */
-	void CSInitADC0(void);
+	void SInitADC0(void);
 
 	/*
 	 * Initializa PF1
 	 * (red build on diode)
 	 */
-	void CSInitRedLed(void);
+	void SInitRedLed(void);
 
 
     /*
@@ -116,12 +116,12 @@
 	* to get ADC0 interrupt to work ADC0IntHandler MUST be placed in interrupt vector
 	* (tm4c123gh6pm_startup_ccs.c file) and declared in this file under "extern void _c_int00(void);"
     */
-	void CSEnableInterrupts(void);
+	void SEnableInterrupts(void);
 
 	/*
 	 * Filter measured current
 	 * taking into accout alpha and beta factors
 	 */
-	void CSAlphaBetaFilter();
+	void SAlphaBetaFilter();
 
-#endif /* ADC_ADC_TIMER_INTERRUPT_DEMO_ADC_CONFIG_H_ */
+#endif /* SENSORS_H_ */
