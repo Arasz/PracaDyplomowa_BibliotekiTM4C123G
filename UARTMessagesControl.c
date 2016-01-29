@@ -18,8 +18,6 @@ unsigned char inBuffer3[MESSAGE_LENGTH_IN]; //buffor to store readed message
 unsigned char inBuffer4[MESSAGE_LENGTH_IN]; //buffor to store readed message
 
 unsigned char outBuffer[MESSAGE_LENGTH_OUT]; //buffor to store message to send
-unsigned char outBufferConnection[MESSAGE_CONNECTION_LENGTH_OUT]; //buffor to store message to send
-
 unsigned char* inBuffer; //temp buffer to store reference to the right inBuffer
 
 unsigned int i = 0; //variable to menage char position in inBuffer array
@@ -60,34 +58,18 @@ void UART4IntHandler(void)
     }
 }
 
-void SendMessage(unsigned char UARTNr, bool connectionMessage)
+void SendMessage(unsigned char UARTNr)
 {
 	int j;
 	if(UARTNr == UART_BLUETOOTH_NR)
 	{
-		if(connectionMessage)
-		{
-			for(j=0; j<MESSAGE_CONNECTION_LENGTH_OUT; j++)
-				UARTCharPutNonBlocking(UART3_BASE,outBufferConnection[j]);
-		}
-		else
-		{
-			for(j=0; j<MESSAGE_LENGTH_OUT; j++)
+		for(j=0; j<MESSAGE_LENGTH_OUT; j++)
 				UARTCharPutNonBlocking(UART3_BASE,outBuffer[j]);
-		}
 	}
 	else if(UARTNr == UART_RASPBERRY_NR)
 	{
-		if(connectionMessage)
-		{
-			for(j=0; j<MESSAGE_CONNECTION_LENGTH_OUT; j++)
-				UARTCharPutNonBlocking(UART4_BASE,outBufferConnection[j]);
-		}
-		else
-		{
 			for(j=0; j<MESSAGE_LENGTH_OUT; j++)
 				UARTCharPutNonBlocking(UART4_BASE,outBuffer[j]);
-		}
 	}
 
 	if(timeToLive == 0)
@@ -95,16 +77,6 @@ void SendMessage(unsigned char UARTNr, bool connectionMessage)
 	else
 		timeToLive -= 1;
 }
-
-/*void CodeAcknowlegeMessage(bool error, unsigned char UARTNr)
-{
-	outBufferConnection[INDEX_START_BYTE]=START_BYTE;
-	outBufferConnection[MESSAGE_CONNECTION_LENGTH_OUT-1]=STOP_BYTE;
-	if(error)
-		outBufferConnection[INDEX_CONNECTION_INFO] = ERROR_SIGN;
-	else
-		outBufferConnection[INDEX_CONNECTION_INFO] = ACKNOWLEDGE_SIGN;
-}*/
 
 void UARTDataChangedSubscribe(void(*uartDataChangedEventHandler)(void))
 {
@@ -119,44 +91,22 @@ void OnUartDataChangedEvent()
 void DecodeMessage(unsigned char UARTNr)
 {
 	ChooseInBuffer(UARTNr);
-	//get connection information from message
-	if(inBuffer[MESSAGE_CONNECTION_LENGTH_IN-1]==STOP_BYTE)
-	{
-		//connection message
-		//update connectionInfo basing on recieved connection message
-		if(inBuffer[INDEX_CONNECTION_INFO]==CONNECT_SIGN )//connect via bluetooth
-		{
-			//CodeAcknowlegeMessage(false, UARTNr); //send that there is no error
-			//SendMessage(UARTNr, true);
 
-			if(UARTNr == UART_BLUETOOTH_NR && connectionState != CONNECTED_RASPBERRY)
-				connectionState = CONNECTED_BLUETOOTH;
-			else if(UARTNr == UART_RASPBERRY_NR && connectionState != CONNECTED_BLUETOOTH)
-				connectionState = CONNECTED_RASPBERRY;
-		}
-		else if(inBuffer[INDEX_CONNECTION_INFO]==DISCONNECTED_SIGN)
-			connectionState = NOT_CONNECTED;
-		/*else
-		{ 		//ERROR
-			CodeAcknowlegeMessage(true, UARTNr); //send that there is an error
-			SendMessage(UARTNr, true);
-		}*/
-	}
+	if(UARTNr == UART_BLUETOOTH_NR && connectionState != CONNECTED_RASPBERRY)
+		connectionState = CONNECTED_BLUETOOTH;
+	else if(UARTNr == UART_RASPBERRY_NR && connectionState != CONNECTED_BLUETOOTH)
+		connectionState = CONNECTED_RASPBERRY;
+
+	//control message
+	//get angle and velocity from message
+	if(inBuffer[INDEX_ROBOT_STOP_SIGN]==ROBOT_MOVE_SIGN)
+		moveRobotFlag = true;
 	else
-	{
-		//control message
-		//get angle and velocity from message
-		if(inBuffer[INDEX_ROBOT_STOP_SIGN]==ROBOT_MOVE_SIGN)
-			moveRobotFlag = true;
-		else
-			moveRobotFlag = false;
+		moveRobotFlag = false;
 
-		drivingAngle = (inBuffer[INDEX_ANGLE]-48)*100 + (inBuffer[INDEX_ANGLE+1]-48)*10 + (inBuffer[INDEX_ANGLE+2]-48);
-		velocity = (inBuffer[INDEX_VELOCITY]-48)*100 + (inBuffer[INDEX_VELOCITY+1]-48)*10 + (inBuffer[INDEX_VELOCITY+2]-48);
-		OnUartDataChangedEvent();
-	}
-
-
+	drivingAngle = (inBuffer[INDEX_ANGLE]-48)*100 + (inBuffer[INDEX_ANGLE+1]-48)*10 + (inBuffer[INDEX_ANGLE+2]-48);
+	velocity = (inBuffer[INDEX_VELOCITY]-48)*100 + (inBuffer[INDEX_VELOCITY+1]-48)*10 + (inBuffer[INDEX_VELOCITY+2]-48);
+	OnUartDataChangedEvent();
 }
 
 void CodeMessage(int current1, int current2, unsigned char UARTNr)

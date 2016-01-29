@@ -47,9 +47,7 @@
 
  //length of the message
 #define MESSAGE_LENGTH_IN 9 //maximum input message length (contains velocity and angle)
-#define MESSAGE_CONNECTION_LENGTH_IN 3
 #define MESSAGE_LENGTH_OUT 12 //output message length
-#define MESSAGE_CONNECTION_LENGTH_OUT 3
 
 //MAX time to live. determines how quickly state turns to disconnected after when recieving messages
 #define TIME_TO_LIVE_MAX 5
@@ -70,7 +68,6 @@ extern unsigned char inBuffer4[MESSAGE_LENGTH_IN]; //buffor to store readed mess
 
 //SHARED BUFFERS
 extern unsigned char outBuffer[MESSAGE_LENGTH_OUT]; //buffor to store message to send
-extern unsigned char outBufferConnection[MESSAGE_CONNECTION_LENGTH_OUT]; //buffor to store message to send
 
 extern unsigned char* inBuffer; //handler to currently used inBuffor
 
@@ -131,9 +128,8 @@ void CodeMessage(int current1, int current2, unsigned char UARTNr);
  * to specific device
  * params:
  * unsigned char UARTNr - number od UART device
- * bool connectionMessage - if message is connection status message
  */
-void SendMessage(unsigned char UARTNr, bool connectionMessage);
+void SendMessage(unsigned char UARTNr);
 
 /*
  * event called whan Uart data changed
