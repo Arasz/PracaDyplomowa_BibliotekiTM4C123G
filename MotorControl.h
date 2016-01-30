@@ -19,6 +19,9 @@
 #include "driverlib/fpu.h"
 #include "driverlib/rom.h"
 
+#include "MatrixCalculation.h"
+#include "StateEstimation.h"
+
 
 /* Defined values */
 
@@ -63,14 +66,16 @@ void MCInitPwm(uint32_t DutyCycle);
 void MCInitControlHardware(uint32_t DutyCycle);
 
 
-void MCPwmDutyCycleSet(Motor selectedMotor, uint32_t DutyCycle);
+void MCPwmDutyCycleSet(Motor selectedMotor, uint32_t dutyCycle);
 void MCChangeMotorState(Motor selectedMotor, MotorState newMotorState);
 
-float CalculateMotorControl(PIDControler* controler, float setpoint,
+float CalculateControlSignal(PIDControler* controler, float setpoint,
 		float measure);
 void InitControler(PIDControler* controler, float kp, float ki, float kd,
 		float ts, float outputLimit, float antiWindupLimit);
-/// \brief Inits motors controlers
 void MCInitControlSoftware(float samplingPeriod);
+
+void MCControlCalculations(double measuredCurrentLeft, double measuredCurrentRight,  double measuredInputVoltage,
+		double rotationSpeedLeft, double rotationSpeedRight);
 
 #endif /* MOTORCONTROL_H_ */

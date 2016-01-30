@@ -10,99 +10,36 @@
 
 #include "MatrixCalculation.h"
 
-#define DIV(x,y) (x/y)
-
-
-/// Motor parameters
-#define Lt  0.000605 // H
-#define Rt  3.5 // Ohm
-/// This 2 should be equal
-#define ke  0.0841 // Vs/rad
-#define km 0.06625 // Nm/A
-//TODO Change this moment of inertia for shaft moment of inertia
-#define J  0.0000007656// kg*m^2
-
-extern int Tp; // Sampling time
-
-double a[] = {DIV(-Rt,Lt), DIV(-ke,Lt), DIV(km,J), 0}; /// A (state) matrix elements
-double b[] = {DIV(1.0, Lt), 0}; /// B (input) matrix elements
-double c[] = {1, 0}; /// C (output) matrix elements
-double z[] = {0, DIV(-1.0,J)}; // Z (error) matrix elements
-double l[] = {DIV(-Rt,Lt)+5.6568, (16.0/DIV(-ke,Lt))+ DIV(km,J)};
-
-const uint n = 2; // state vector height
-const uint m = 1; // inputs vector height
-const uint q = 1; // error vector height
-const uint p = 1; // output vector height
-
-
-Matrix A, B, C, Z;
-Matrix L; /// Observer gain matrix
-Matrix xp;
-Matrix yp;
-double u;
-double d; // Distribuance
-double eps; // Estimation error
-
-
-// Kalman matrices
-
-Matrix P0, x0. Ppri, Ppost, V;
-double stdDevV, stdDevW, W, S;
-
 /**
- * @brief Initialize state space motor model with pre-configured parameters
+ * Kalman filter definition
  */
-void InitStateObserver()
+typedef struct kalman
 {
-	double zeros[4] = {0};
+	Matrix A, B, C; /// Macierze dyskretnego modelu uk³adu
+	Matrix P0; /// Pocz¹tkowa wartoœc macierzy kowariancji uk³du
+	Matrix P_pri; /// Predykcja jednokrokowa macierzy kowariancji
+	Matrix P_post; /// Macierz kowariancji po korekcji
+	Matrix Q; /// Macierz kowariancji szumu pomiarowego
+	Matrix R; /// Macierz kowariancji procesu
+	Matrix S;
+	Matrix K; /// Wzmocnienie kalmana
 
-	InitMatrix(&A, n, n, a);
+	Matrix x0; // Oczekiwany poczatkowy stan uk³adu
+	Matrix x_pri; // Predykcja jednokrokowa stanu uk³adu
+	Matrix x_post; // Predykcja stanu uk³adu po korekcji
 
-	InitMatrix(&B,n, m, b);
+	double eps; // B³¹d predykcji
 
-	InitMatrix(&Z, n, q, z);
+} KalmanFilter;
 
-	InitMatrix(&C, p, n, c);
 
-	InitMatrix(&L, n, p, l);
+void InitKalmanFilter();
+void KalmanFilterAlgorithm(double u, double y, Matrix* estimatedState);
 
-	InitMatrix(&xp, n, 1, zeros);
+void CalculateEstimatedState(double u, double y, Matrix* estimatedState);
 
-	InitMatrix(&yp, m, 1, zeros);
-}
 
-void InitKalmanFilter()
-{
 
-}
-
-void CalculateEstimatedState(double u, double y, Matrix* estimatedState)
-{
-	StateObserver(double u, double y, Matrix* estimatedState);
-}
-
-void StateObserver(double u, double y, Matrix* estimatedState)
-{
-	Matrix Ax, Bu, Cx, Leps;
-
-	// Time update
-	Multiply(&A, &xp, &Ax); // Ax'
-	MultiplyByScalar(&B, u, &Bu); // Bu
-	Add(&Ax,&Bu,estimatedState); // Ax' + Bu
-
-	// Measuremnt update
-	Multiply(&C, estimatedState, &Cx);// Cx'
-	eps = y - GetElement(&Cx, 0, 0); // eps = y - y' estimation error
-
-	MultiplyByScalar(&L, eps, &Leps); // L*eps
-	Add(estimatedState, &Leps, &xp); // Update state
-}
-
-void KalmanFilter(double u, double y, Matrix* estimatedState)
-{
-
-}
 
 
 

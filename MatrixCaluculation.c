@@ -8,14 +8,21 @@
 
 #include "MatrixCalculation.h"
 
-void SetSize(Matrix* A, uint m, uint n)
+void InitMatrixLib()
+{
+	// Enable FPU for fast calculations
+	ROM_FPULazyStackingEnable();
+	ROM_FPUEnable();
+}
+
+void SetSize(Matrix* A, uint32_t m, uint32_t n)
 {
 	A->m = m;
 	A->n = n;
 	A->size = m*n;
 }
 
-inline void InitMatrix(Matrix* A, uint m, uint n, double* values)
+void InitMatrix(Matrix* A, uint32_t m, uint32_t n, double* values)
 {
 	SetSize(A, m, n);
 
@@ -25,13 +32,14 @@ inline void InitMatrix(Matrix* A, uint m, uint n, double* values)
 	}
 }
 
-double GetElement(Matrix* A,uint i, uint j)
+
+double GetElement(Matrix* A,uint32_t i, uint32_t j)
 {
 	// get element i,j element from flat table
 	return A->elements[(i*A->n)+j];
 }
 
-void SetElement(Matrix* A, uint i, uint j, double value)
+void SetElement(Matrix* A, uint32_t i, uint32_t j, double value)
 {
 	// set element i,j element from flat table
 	A->elements[(i*A->n)+j]=value;
@@ -96,7 +104,7 @@ int Multiply(Matrix* A, Matrix* B, Matrix* C)
 				SetElement(&result, i, j, tmp);
 			}
 		}
-		CopyMatrix(&result, C);
+		DeepMatrixCopy(&result, C);
 		return 0;
 	}
 	return -1;
@@ -105,7 +113,7 @@ int Multiply(Matrix* A, Matrix* B, Matrix* C)
 /**
  * @brief Copy matrix A to matrix B
  */
-void CopyMatrix(Matrix* A, Matrix* B)
+void DeepMatrixCopy(Matrix* A, Matrix* B)
 {
     SetSize(B, A->m, A->n);
 
@@ -115,20 +123,32 @@ void CopyMatrix(Matrix* A, Matrix* B)
     }
 }
 
-void Transpose(Matrix* A)
+void Transpose(Matrix* A, Matrix* B)
 {
-    Matrix copy;// = *A;
+	SetSize(B,A->n, A->m);
 
-    CopyMatrix(A, &copy); // copy A to copy
-
-	for(int i=0; i<copy.m; i++)
+	for(int i=0; i<A->m; i++)
 	{
-		for(int j=0; j<copy.n; j++)
+		for(int j=0; j<A->n; j++)
 		{
-            SetElement(A, i ,j , GetElement(&copy, j, i) );
+            SetElement(B, j ,i , GetElement(A, i, j) );
 		}
 	}
-
-	A->m=copy.n;
-	A->n=copy.m;
 }
+
+int Inverse(Matrix* A, Matrix* B)
+{
+	if(A->m==A->n)
+	{
+		double det = (GetElement(A,1,1)*GetElement(A,2,2))-(GetElement(A,1,2)*GetElement(A,2,1));
+		SetElement(B, 1, 1, GetElement(A, 2, 2));
+		SetElement(B, 1, 2, -GetElement(A, 1, 2));
+		SetElement(B, 2, 1, -GetElement(A, 2, 1));
+		SetElement(B, 2, 2, GetElement(A, 1, 1));
+		MultiplyByScalar(B, det, B);
+		return 0;
+	}
+	else
+		return -1;
+}
+

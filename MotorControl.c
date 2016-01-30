@@ -8,10 +8,15 @@
 #include "MotorControl.h"
 
 #define DUTY_CYCLE_DIVIDER 100
+#define MAX_MOTOR_VOLTAGE 7.4
+#define MAX_MOTOR_CURRENT 1.6
 
-uint32_t LoadValue; //< PWM counter load value
+uint32_t LoadValue; /// PWM counter load value
 
-PIDControler LeftMotorControler, RigthMotorControler;
+static uint32_t DutyCycleLeft=0; /// PWM duty cycle
+static uint32_t DutyCycleRight=0; /// PWM duty cycle
+
+static PIDControler currentControllerLeft, speedControlerLeft, currentControllerRight, speedControlerRight; /// Motor controlers
 
 void MCInitPwm(uint32_t DutyCycle)
 {
@@ -70,18 +75,32 @@ void MCInitControlHardware(uint32_t DutyCycle)
 
 void MCInitControlSoftware(float samplingPeriod)
 {
-	//left - motorA
-	InitControler(&LeftMotorControler, 1, 1, 1, samplingPeriod, 1000, 1000);
-	//right - motorB
-	InitControler(&RigthMotorControler, 1, 1, 1, samplingPeriod, 1000, 1000);
+	//left - motorA controlers initialization
+	InitControler(&currentControllerLeft, 1, 1, 1, samplingPeriod, MAX_MOTOR_CURRENT, 100);
+	InitControler(&speedControlerLeft, 1, 1, 1, samplingPeriod, MAX_MOTOR_VOLTAGE, 100);
+	//right - motorB controlers initialization
+	InitControler(&currentControllerRight, 1, 1, 1, samplingPeriod, MAX_MOTOR_CURRENT, 100);
+	InitControler(&speedControlerRight, 1, 1, 1, samplingPeriod, MAX_MOTOR_VOLTAGE, 100);
+
+	// init kalman filter (state observer)
+	InitKalmanFilter();
 }
 
-void MCPwmDutyCycleSet(Motor selectedMotor, uint32_t DutyCycle)
+void MCPwmDutyCycleSet(Motor selectedMotor, uint32_t dutyCycle)
 {
-	if(DutyCycle>0)
-		ROM_PWMPulseWidthSet(PWM1_BASE, selectedMotor, (DutyCycle*LoadValue)/100 );
+
+	if(dutyCycle>0)
+		ROM_PWMPulseWidthSet(PWM1_BASE, selectedMotor, (dutyCycle*LoadValue)/DUTY_CYCLE_DIVIDER );
 	else
 		ROM_PWMPulseWidthSet(PWM1_BASE, selectedMotor, 1);
+
+	switch(selectedMotor)
+	{
+	case MotorA:
+		DutyCycleLeft = dutyCycle;
+	case MotorB:
+		DutyCycleRight = dutyCycle;
+	}
 }
 
 void MCChangeMotorState(Motor selectedMotor, MotorState newMotorState)
@@ -102,6 +121,9 @@ void MCChangeMotorState(Motor selectedMotor, MotorState newMotorState)
 	}
 }
 
+/**
+ *
+ */
 void InitControler(PIDControler* controler, float kp, float ki, float kd,
 		float ts, float outputLimit, float antiWindupLimit)
 {
@@ -160,5 +182,63 @@ float CalculateControlSignal(PIDControler* controler, float setpoint,
 		controlSignal = -controler->OutputLimit;
 
 	return controlSignal;
+}
+
+
+static Matrix estimatedStateLeft;
+static Matrix estimatedStateRight;
+void MCControlCalculations(double measuredCurrentLeft, double measuredCurrentRight,  double measuredInputVoltage,
+		double rotationSpeedLeft, double rotationSpeedRight)
+{
+	// Left motor
+	// Mean PWM voltage
+	double meanPwmVoltageLeft = (DutyCycleLeft*measuredInputVoltage)/DUTY_CYCLE_DIVIDER;
+	// At first estimate rotation speed
+	CalculateEstimatedState(meanPwmVoltageLeft, measuredCurrentLeft, &estimatedStateLeft);
+	double estimatedRotationSpeedLeft = GetElement(&estimatedStateLeft, 2, 1);
+	// Calculate current with speed controller for current controller
+	double calculatedCurrentLeft = CalculateControlSignal(&speedControlerLeft, rotationSpeedLeft, estimatedRotationSpeedLeft);
+	// Calculate motor voltage with current controller
+	double calculatedMotorVoltageLeft = CalculateControlSignal(&currentControllerLeft, calculatedCurrentLeft, measuredCurrentLeft);
+	// Calculate duty cycle
+	double pwmDutyCycleLeft = (calculatedMotorVoltageLeft/measuredInputVoltage)*100;
+
+	//Right motor
+	// Mean PWM voltage
+	double meanPwmVoltageRight = (DutyCycleRight*measuredInputVoltage)/DUTY_CYCLE_DIVIDER;
+	// At first estimate rotation speed
+	CalculateEstimatedState(meanPwmVoltageRight, measuredCurrentRight, &estimatedStateRight);
+	double estimatedRotationSpeedRight = GetElement(&estimatedStateRight, 2, 1);
+	// Calculate current with speed controller for current controller
+	double calculatedCurrentRight = CalculateControlSignal(&speedControlerRight, rotationSpeedRight, estimatedRotationSpeedRight);
+	// Calculate motor voltage with current controller
+	double calculatedMotorVoltageRight = CalculateControlSignal(&currentControllerLeft, calculatedCurrentRight, measuredCurrentRight);
+	// Calculate duty cycle
+	double pwmDutyCycleRight = (calculatedMotorVoltageRight/measuredInputVoltage)*100;
+
+
+	if(pwmDutyCycleLeft < 0)
+	{
+		MCChangeMotorState(MotorA, ROT_CCW);
+		MCPwmDutyCycleSet(MotorA, -pwmDutyCycleLeft);
+	}
+	else
+	{
+		MCChangeMotorState(MotorA, ROT_CW);
+		MCPwmDutyCycleSet(MotorA, pwmDutyCycleLeft);
+	}
+
+	if(pwmDutyCycleRight < 0)
+	{
+		MCChangeMotorState(MotorB, ROT_CCW);
+		MCPwmDutyCycleSet(MotorB, -pwmDutyCycleRight);
+	}
+	else
+	{
+		MCChangeMotorState(MotorB, ROT_CW);
+		MCPwmDutyCycleSet(MotorB, pwmDutyCycleRight);
+	}
+
+
 }
 
