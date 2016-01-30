@@ -24,7 +24,7 @@ typedef struct kalman
 	Matrix S;
 	Matrix K; /// Wzmocnienie kalmana
 
-	Matrix x0; // Oczekiwany poczatkowy stan uk³adu
+	Matrix x_init; // Oczekiwany poczatkowy stan uk³adu
 	Matrix x_pri; // Predykcja jednokrokowa stanu uk³adu
 	Matrix x_post; // Predykcja stanu uk³adu po korekcji
 

@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "driverlib/fpu.h"
-#include "driverlib/rom.h"
+//#include "driverlib/fpu.h"
+//#include "driverlib/rom.h"
 
 
 typedef struct matrix
@@ -15,7 +15,7 @@ typedef struct matrix
 	double elements[4];
 }Matrix;
 
-inline void InitMatrixLib();
+//inline void InitMatrixLib();
 
 inline void InitMatrix(Matrix* A, uint32_t m, uint32_t n, double* values);
 

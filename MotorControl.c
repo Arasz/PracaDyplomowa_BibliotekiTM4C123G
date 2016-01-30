@@ -13,10 +13,10 @@
 
 uint32_t LoadValue; /// PWM counter load value
 
-static uint32_t DutyCycleLeft=0; /// PWM duty cycle
-static uint32_t DutyCycleRight=0; /// PWM duty cycle
+uint32_t DutyCycleLeft=0; /// PWM duty cycle
+uint32_t DutyCycleRight=0; /// PWM duty cycle
 
-static PIDControler currentControllerLeft, speedControlerLeft, currentControllerRight, speedControlerRight; /// Motor controlers
+PIDControler currentControllerLeft, speedControlerLeft, currentControllerRight, speedControlerRight; /// Motor controlers
 
 void MCInitPwm(uint32_t DutyCycle)
 {
@@ -48,7 +48,8 @@ void MCInitPwm(uint32_t DutyCycle)
 	// Invert output - if true output is active low
 	ROM_PWMOutputInvert(PWM1_BASE,PWM_OUT_2_BIT|PWM_OUT_3_BIT, false );
 	// Set PWM Output update mode to local sync ( update when generator count reaches 0)
-	ROM_PWMOutputUpdateMode(PWM1_BASE, PWM_OUT_2_BIT|PWM_OUT_3_BIT, PWM_OUTPUT_MODE_SYNC_LOCAL);
+	// NO ROM PLEASE NO ROM
+	PWMOutputUpdateMode(PWM1_BASE, PWM_OUT_2_BIT|PWM_OUT_3_BIT, PWM_OUTPUT_MODE_SYNC_LOCAL);
 	// Enable PWM generator
 	ROM_PWMGenEnable(PWM1_BASE, PWM_GEN_1);
 
@@ -67,7 +68,7 @@ void MCInitControlHardware(uint32_t DutyCycle)
 {
 	// Enable FPU for fast calculations
 	ROM_FPULazyStackingEnable();
-	ROM_FPUEnable();
+ 	ROM_FPUEnable();
 
 	MCInitGpio();
 	MCInitPwm(DutyCycle);
@@ -83,7 +84,7 @@ void MCInitControlSoftware(float samplingPeriod)
 	InitControler(&speedControlerRight, 41.36, 108.43, 3.81, samplingPeriod, MAX_MOTOR_VOLTAGE, 100);
 
 	// init kalman filter (state observer)
-	//InitKalmanFilter();
+	InitKalmanFilter();
 }
 
 void MCPwmDutyCycleSet(Motor selectedMotor, uint32_t dutyCycle)

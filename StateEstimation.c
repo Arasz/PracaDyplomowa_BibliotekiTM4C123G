@@ -11,10 +11,10 @@
 static double a[] = {0.003072, -0.02395, 2.208e-5, 1}; /// A (state) matrix elements
 static double b[] = {0.2848, 3.03e-5}; /// B (input) matrix elements
 static double c[] = {1, 0}; /// C (output) matrix elements
-static double p0[4] = {0}; /// Input kalman covariance
-static double q[4] = {0}; /// Measurment covariance matrix elements
-static double r[4] = {0}; /// Proces covariance matrix elements
-static double x0[4] = {0}; /// Proces covariance matrix elements
+static double p0[] = {0, 0, 0, 0}; /// Input kalman covariance
+static double q[] = {0, 0, 0, 0}; /// Measurment covariance matrix elements
+static double r[] = {0, 0, 0, 0}; /// Proces covariance matrix elements
+static double x0[] = {0, 0, 0, 0}; /// Proces covariance matrix elements
 
 
 static KalmanFilter stateEstimator;
@@ -28,12 +28,13 @@ void InitKalmanFilter()
 	InitMatrix(&stateEstimator.B, 2, 1, b);
 	InitMatrix(&stateEstimator.C, 1, 2, c);
 	InitMatrix(&stateEstimator.P0, 2, 2, p0);
-	InitMatrix(&stateEstimator.x0, 2, 1, x0);
+	InitMatrix(&stateEstimator.x_init, 2, 1, x0);
+	InitMatrix(&stateEstimator.x_pri, 2, 1, x0);
+	InitMatrix(&stateEstimator.x_post, 2, 1, x0);
+	InitMatrix(&stateEstimator.P_post, 2, 2, p0);
+	InitMatrix(&stateEstimator.P_pri, 2, 2, p0);
 	InitMatrix(&stateEstimator.R, 2, 1, r);
 	InitMatrix(&stateEstimator.Q, 1, 2, q);
-
-	DeepMatrixCopy(&stateEstimator.P_post, &stateEstimator.P0);
-	DeepMatrixCopy(&stateEstimator.x_pri, &stateEstimator.x0);
 }
 
 

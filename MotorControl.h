@@ -8,6 +8,7 @@
 #ifndef MOTORCONTROL_H_
 #define MOTORCONTROL_H_
 
+#include "driverlib/rom.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include "inc/hw_memmap.h"
@@ -17,7 +18,7 @@
 #include "driverlib/pwm.h"
 #include "driverlib/pin_map.h"
 #include "driverlib/fpu.h"
-#include "driverlib/rom.h"
+
 
 #include "MatrixCalculation.h"
 #include "StateEstimation.h"

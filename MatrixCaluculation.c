@@ -8,12 +8,12 @@
 
 #include "MatrixCalculation.h"
 
-void InitMatrixLib()
-{
-	// Enable FPU for fast calculations
-	ROM_FPULazyStackingEnable();
-	ROM_FPUEnable();
-}
+//void InitMatrixLib()
+//{
+//	// Enable FPU for fast calculations
+//	ROM_FPULazyStackingEnable();
+//	ROM_FPUEnable();
+//}
 
 void SetSize(Matrix* A, uint32_t m, uint32_t n)
 {
