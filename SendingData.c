@@ -13,12 +13,12 @@ void Timer1IntHandler(void)
 	if(connectionState==CONNECTED_BLUETOOTH)
     {
 		CodeMessage(CurrentMotorRightFiltered, CurrentMotorLeftFiltered, UART_BLUETOOTH_NR); //create some mock data
-	    SendMessage(UART_BLUETOOTH_NR, false); //sends outBuffer
+	    SendMessage(UART_BLUETOOTH_NR); //sends outBuffer
     }
 	else if (connectionState==CONNECTED_RASPBERRY)
 	{
 		CodeMessage(CurrentMotorRightFiltered, CurrentMotorLeftFiltered, UART_RASPBERRY_NR); //create some mock data
-	    SendMessage(UART_RASPBERRY_NR, false); //sends outBuffer
+	    SendMessage(UART_RASPBERRY_NR); //sends outBuffer
 	}
 	//else - not connected, dont send anything
 
