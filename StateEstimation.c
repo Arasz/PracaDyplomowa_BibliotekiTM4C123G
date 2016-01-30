@@ -8,8 +8,8 @@
 
 #include "StateEstimation.h"
 
-static double a[] = {1, 1, 1, 1}; /// A (state) matrix elements
-static double b[] = {1, 1}; /// B (input) matrix elements
+static double a[] = {0.003072, -0.02395, 2.208e-5, 1}; /// A (state) matrix elements
+static double b[] = {0.2848, 3.03e-5}; /// B (input) matrix elements
 static double c[] = {1, 0}; /// C (output) matrix elements
 static double p0[4] = {0}; /// Input kalman covariance
 static double q[4] = {0}; /// Measurment covariance matrix elements

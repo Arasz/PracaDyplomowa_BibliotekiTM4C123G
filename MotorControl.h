@@ -31,8 +31,8 @@
 
 typedef enum MotorType
 {
-	MotorA = PWM_OUT_2,
-	MotorB = PWM_OUT_3,
+	MotorLeft = PWM_OUT_2,
+	MotorRight = PWM_OUT_3,
 } Motor;
 
 typedef enum MotorStateType

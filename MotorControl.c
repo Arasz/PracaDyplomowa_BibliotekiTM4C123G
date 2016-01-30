@@ -76,14 +76,14 @@ void MCInitControlHardware(uint32_t DutyCycle)
 void MCInitControlSoftware(float samplingPeriod)
 {
 	//left - motorA controlers initialization
-	InitControler(&currentControllerLeft, 1, 1, 1, samplingPeriod, MAX_MOTOR_CURRENT, 100);
-	InitControler(&speedControlerLeft, 1, 1, 1, samplingPeriod, MAX_MOTOR_VOLTAGE, 100);
+	InitControler(&currentControllerLeft, 0, 0.18068, 0, samplingPeriod, MAX_MOTOR_CURRENT, 100);
+	InitControler(&speedControlerLeft, 41.36, 108.43, 3.81, samplingPeriod, MAX_MOTOR_VOLTAGE, 100);
 	//right - motorB controlers initialization
-	InitControler(&currentControllerRight, 1, 1, 1, samplingPeriod, MAX_MOTOR_CURRENT, 100);
-	InitControler(&speedControlerRight, 1, 1, 1, samplingPeriod, MAX_MOTOR_VOLTAGE, 100);
+	InitControler(&currentControllerRight, 0, 0.18068, 0, samplingPeriod, MAX_MOTOR_CURRENT, 100);
+	InitControler(&speedControlerRight, 41.36, 108.43, 3.81, samplingPeriod, MAX_MOTOR_VOLTAGE, 100);
 
 	// init kalman filter (state observer)
-	InitKalmanFilter();
+	//InitKalmanFilter();
 }
 
 void MCPwmDutyCycleSet(Motor selectedMotor, uint32_t dutyCycle)
@@ -96,9 +96,9 @@ void MCPwmDutyCycleSet(Motor selectedMotor, uint32_t dutyCycle)
 
 	switch(selectedMotor)
 	{
-	case MotorA:
+	case MotorLeft:
 		DutyCycleLeft = dutyCycle;
-	case MotorB:
+	case MotorRight:
 		DutyCycleRight = dutyCycle;
 	}
 }
@@ -108,10 +108,10 @@ void MCChangeMotorState(Motor selectedMotor, MotorState newMotorState)
 
 	switch(selectedMotor)
 	{
-		case MotorA: //left motor
+		case MotorLeft: //left motor
 			ROM_GPIOPinWrite(GPIO_PORTE_BASE,GPIO_PIN_4|GPIO_PIN_5, newMotorState<<4);
 			break;
-		case MotorB: //right motor
+		case MotorRight: //right motor
 			ROM_GPIOPinWrite(GPIO_PORTE_BASE,GPIO_PIN_1|GPIO_PIN_2, newMotorState<<1);
 			break;
 		default:
@@ -219,24 +219,24 @@ void MCControlCalculations(double measuredCurrentLeft, double measuredCurrentRig
 
 	if(pwmDutyCycleLeft < 0)
 	{
-		MCChangeMotorState(MotorA, ROT_CCW);
-		MCPwmDutyCycleSet(MotorA, -pwmDutyCycleLeft);
+		MCChangeMotorState(MotorLeft, ROT_CCW);
+		MCPwmDutyCycleSet(MotorLeft, -pwmDutyCycleLeft);
 	}
 	else
 	{
-		MCChangeMotorState(MotorA, ROT_CW);
-		MCPwmDutyCycleSet(MotorA, pwmDutyCycleLeft);
+		MCChangeMotorState(MotorLeft, ROT_CW);
+		MCPwmDutyCycleSet(MotorLeft, pwmDutyCycleLeft);
 	}
 
 	if(pwmDutyCycleRight < 0)
 	{
-		MCChangeMotorState(MotorB, ROT_CCW);
-		MCPwmDutyCycleSet(MotorB, -pwmDutyCycleRight);
+		MCChangeMotorState(MotorRight, ROT_CCW);
+		MCPwmDutyCycleSet(MotorRight, -pwmDutyCycleRight);
 	}
 	else
 	{
-		MCChangeMotorState(MotorB, ROT_CW);
-		MCPwmDutyCycleSet(MotorB, pwmDutyCycleRight);
+		MCChangeMotorState(MotorRight, ROT_CW);
+		MCPwmDutyCycleSet(MotorRight, pwmDutyCycleRight);
 	}
 
 
