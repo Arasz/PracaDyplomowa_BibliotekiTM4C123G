@@ -73,9 +73,14 @@ void SendMessage(unsigned char UARTNr)
 	}
 
 	if(timeToLive == 0)
+	{
 		connectionState = NOT_CONNECTED;
+		moveRobotFlag = false; //NOT CONNECTED <- DONT MOVE
+		OnUartDataChangedEvent(); //STOP ROBOT
+	}
 	else
 		timeToLive -= 1;
+
 }
 
 void UARTDataChangedSubscribe(void(*uartDataChangedEventHandler)(void))
@@ -91,6 +96,7 @@ void OnUartDataChangedEvent()
 void DecodeMessage(unsigned char UARTNr)
 {
 	ChooseInBuffer(UARTNr);
+	timeToLive = TIME_TO_LIVE_MAX;
 
 	if(UARTNr == UART_BLUETOOTH_NR && connectionState != CONNECTED_RASPBERRY)
 		connectionState = CONNECTED_BLUETOOTH;
@@ -150,7 +156,6 @@ void CodeMessage(int current1, int current2, unsigned char UARTNr)
 
 void WriteCharToBuffer(unsigned char character, unsigned char UARTNr)
 {
-	timeToLive = TIME_TO_LIVE_MAX;
     if(character == START_BYTE)
     {
     	i=0;
