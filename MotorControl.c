@@ -61,8 +61,8 @@ void MCInitGpio()
 void MCInitControlHardware(uint32_t DutyCycle)
 {
 	// Enable FPU for fast calculations
-	//ROM_FPULazyStackingEnable();
-	//ROM_FPUEnable();
+	ROM_FPULazyStackingEnable();
+	ROM_FPUEnable();
 
 	MCInitGpio();
 	MCInitPwm(DutyCycle);
